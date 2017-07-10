@@ -1,0 +1,33 @@
+.search {
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  right: 0px;
+  left: 0px;
+  background: #FFF;
+}
+
+.search-close {
+  font-size: 50px;
+  background: #FFF;
+  color: $brand-primary;
+  border: none;
+  position: absolute;
+  top: 5px;
+  right: 30px;
+  outline: none;
+  line-height: 1;
+  border-radius: 4px;
+  height: 50px;
+  width: 50px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.search-close:hover{
+  box-shadow: 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.3);
+}
+
+.search-bar-wrapper {
+  margin-top: 60px;
+}

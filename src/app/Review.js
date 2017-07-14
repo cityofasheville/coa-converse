@@ -69,7 +69,7 @@ const testEmployees = [
             id: 3,
             type: 'Y/N',
             question: '<legend>Satisfactory</legend><p>Is this employee satisfactorily fullfilling their duties?</p>',
-            answer: '1',
+            answer: 'Y',
             required: true,
           }
         ],
@@ -218,7 +218,7 @@ class Review extends React.Component {
         <form>
           <div className="row form-horizontal">
             <h1>Conversation between {this.props.review.employee_name} and supervisor {this.props.review.reviewer_name}</h1>
-            <Link className="pull-right" style={{ fontSize: '20px' }} to={{ pathname: 'printableReview', query: {emp: this.props.review.employee_id, rev: this.props.review.id}} }>Printable Version</Link>
+            <Link className="pull-right" style={{ fontSize: '20px' }} to={{ pathname: 'printableConversation', query: {emp: this.props.review.employee_id, rev: this.props.review.id}} }>Printable Version</Link>
             <div className="col-sm-12">
               <div className="form-group">
                 <fieldset className="reviewQuestionFieldset">

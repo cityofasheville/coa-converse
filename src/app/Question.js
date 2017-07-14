@@ -46,10 +46,10 @@ class Question extends React.Component {
                 disabled={!this.props.editable}
                 >
                   <label>
-                    <Radio value="1" disabled={!this.props.editable} />Yes
+                    <Radio value="Y" disabled={!this.props.editable} />Yes
                   </label>
                   <label>
-                    <Radio value="0" disabled={!this.props.editable} />No
+                    <Radio value="N" disabled={!this.props.editable} />No
                   </label>
               </RadioGroup>
             </div>

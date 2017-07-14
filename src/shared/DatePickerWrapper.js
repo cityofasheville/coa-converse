@@ -19,6 +19,9 @@ class DatePickerWrapper extends React.Component {
     this.setState({
       startDate: date
     });
+    if (this.props.onChange !== undefined) {
+      this.props.onChange(date);
+    }
   }
 
   render() {

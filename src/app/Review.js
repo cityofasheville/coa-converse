@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import { Radio, RadioGroup } from 'react-radio-group';
 import DatePickerWrapper from '../shared/DatePickerWrapper';
 import Question from './Question';
+import Response from './Response';
 
 const testEmployees = [
     {
@@ -41,7 +42,7 @@ const testEmployees = [
     reviews: [
       {
         id: 56,
-        status: 'Open',
+        status: 'Ready',
         supervisor_id: 123,
         employee_id: 6645,
         position: 'Most Awesomest Coder Ever',
@@ -67,12 +68,24 @@ const testEmployees = [
           {
             id: 3,
             type: 'Y/N',
-            question: '<legend>Up to par</legend><p>Is this employee up to par?</p>',
+            question: '<legend>Satisfactory</legend><p>Is this employee satisfactorily fullfilling their duties?</p>',
             answer: '1',
             required: true,
           }
         ],
-        responses: [],
+        responses: [
+          {
+            question_id: 2,
+            review_id: 56,
+            Response: 'This is a resposne to the question for testing.',
+          },
+          {
+            question_id: -1,
+            review_id: 56,
+            Response: 'My overall response is that I do not like getting reviewed at all!',
+          }
+
+        ],
       }
     ],
   },
@@ -128,7 +141,7 @@ const testEmployees = [
     reviews: [
       {
         id: 15,
-        status: 'Open',
+        status: 'Ready',
         supervisor_id: 123,
         employee_id: 6507,
         position: 'Most Awesomest Tech Guru Ever',
@@ -158,7 +171,7 @@ const testEmployees = [
 
 const getResponse = (questionId, responses) => {
   //assumes 1:1 relationship between a question and a response
-  for (response of responses) {
+  for (let response of responses) {
     if (questionId === response.question_id) {
       return response;
     }
@@ -166,44 +179,160 @@ const getResponse = (questionId, responses) => {
   return null;
 }
 
-const Review = props => (
-  <div>
-    <form>
-      <div className="row form-horizontal">
-        <h1>Conversation between {props.review.employee_name} and supervisor {props.review.reviewer_name}</h1>
-        <Link className="pull-right" style={{ fontSize: '20px' }} to={{ pathname: 'printableReview', query: {emp: props.review.employee_id, rev: props.review.id}} }>Printable Version</Link>
-        <div className="col-sm-12">
-          <div className="form-group">
-            <fieldset className="reviewQuestionFieldset">
-              <legend>Period</legend>
-              <div className="col-sm-6 col-xs-12" style={{ marginBottom: '10px' }}>
-                <label htmlFor="startDate" className="col-xs-2" style={{ textAlign: 'right'}}>From: </label>
-                <div className="col-xs-4">
-                  <DatePickerWrapper startDate={props.review.periodStart} id="startDate" />
-                </div>
+//will main response have question_id as -1? will it exist always or do we need to return an empty obj here
+const getMainReviewResponse = (responses) => {
+  for (let response of responses) {
+    if (response.question_id === -1) {
+      return response;
+    }
+  }
+  return null;
+}
+
+class Review extends React.Component {
+  constructor(props) {
+    super(props);
+    //figure out if the answers are editable, etc
+    let role = 'Employee'; //todo set properly according to if employee_id matches the logged in user's or not
+    this.state = {
+      periodStart: this.props.review.startDate,
+      periodEnd: this.props.review.endDate,
+      questions: this.props.review.questions,
+      responses: this.props.review.responses,
+      validationErrors: {},
+      role: role,
+      answersEditable: this.props.review.status === 'Open' && role === 'Supervisor' ? true : false,
+      responsesEditable: this.props.review.status === 'Ready' && role === 'Employee' ? true : false,
+      actionRadio: 'saveonly', //todo set appropriate action value based on other vars
+    }
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
+    
+  handleSubmit(event) {
+    console.log('you are submitting');
+  }
+  
+  render() {
+    return (
+      <div>
+        <form>
+          <div className="row form-horizontal">
+            <h1>Conversation between {this.props.review.employee_name} and supervisor {this.props.review.reviewer_name}</h1>
+            <Link className="pull-right" style={{ fontSize: '20px' }} to={{ pathname: 'printableReview', query: {emp: this.props.review.employee_id, rev: this.props.review.id}} }>Printable Version</Link>
+            <div className="col-sm-12">
+              <div className="form-group">
+                <fieldset className="reviewQuestionFieldset">
+                  <legend>Period</legend>
+                  <div className="col-sm-6 col-xs-12" style={{ marginBottom: '10px' }}>
+                    <label htmlFor="startDate" className="col-xs-2" style={{ textAlign: 'right'}}>From: </label>
+                    <div className="col-xs-4">
+                      <DatePickerWrapper startDate={this.props.review.periodStart} id="startDate" onChange={(value) => (console.log(value._i))} />
+                    </div>
+                  </div>
+                  <div className="col-sm-6 col-xs-12">
+                    <label htmlFor="endDate" className="col-xs-2" style={{ textAlign: 'right'}}>To: </label>
+                    <div className="col-xs-4">
+                      <DatePickerWrapper endDate={this.props.review.periodEnd} id="startDate" onChange={(value) => (console.log(value._i))} />
+                    </div>
+                  </div>
+                </fieldset>
               </div>
-              <div className="col-sm-6 col-xs-12">
-                <label htmlFor="endDate" className="col-xs-2" style={{ textAlign: 'right'}}>To: </label>
-                <div className="col-xs-4">
-                  <DatePickerWrapper endDate={props.review.periodEnd} id="startDate" />
-                </div>
+              <div className="form-group">
+                {this.props.review.questions.map((question, index) => (
+                  <div key={['question', index].join('_')}>
+                    <Question question={question} editable={this.state.answersEditable} onChange={question.type === 'Text' ? ((value) => (console.log(value.level.content))) : ((value) => (console.log(value)))}/>
+                    {getResponse(question.id, this.props.review.responses) !== null &&
+                      <Response response={getResponse(question.id, this.props.review.responses)} editable={this.state.responsesEditable} onChange={(value) => (console.log(value.level.content))} />
+                    }
+                  </div>
+                ))}
               </div>
-            </fieldset>
+              <div className="form-group">
+                <Response response={getMainReviewResponse(this.props.review.responses)} standalone editable={this.state.responsesEditable} onChange={(value) => (console.log(value.level.content))} />
+              </div>
+              {this.props.review.status !== 'Closed' &&
+                <div className="form-group">
+                  <fieldset className="reviewQuestionFieldset">
+                    <legend>Action</legend>
+                    {this.state.role === 'Supervisor' && this.props.review.status === 'Open' &&
+                      <div>
+                        <p><i>Please discuss your answers with your employee before submittion for their acknowledgement.</i></p>
+                        <RadioGroup
+                          name="workflow"
+                          selectedValue={this.state.actionRadio}
+                          onChange={(val) => (this.setState({actionRadio: val}))}
+                          >
+                            <label>
+                              <Radio value="saveonly" />Save only
+                            </label>
+                            <label>
+                              <Radio value="sendack" />Submit for employee acknowledgement
+                            </label>
+                        </RadioGroup>
+                        <input type="button" className="btn btn-primary" value="Save" onClick={this.handleSubmit}/>
+                      </div>
+                    }
+                    {this.state.role === 'Supervisor' && this.props.review.status === 'Acknowledged' &&
+                      <div>
+                        <RadioGroup
+                          name="workflow"
+                          selectedValue={this.state.actionRadio}
+                          onChange={(val) => (this.setState({actionRadio: val}))}
+                          >
+                            <label>
+                              <Radio value="saveonly" />Save only
+                            </label>
+                            <label>
+                              <Radio value="reopen" />Re-open
+                            </label>                          
+                            <label>
+                              <Radio value="close" />Submit to HR record
+                            </label>
+                        </RadioGroup>
+                        <input type="button" className="btn btn-primary" value="Save" onClick={this.handleSubmit}/>
+                      </div>
+                    }
+                    {this.state.role === 'Supervisor' && this.props.review.status === 'Ready' &&
+                      <div className="alert alert-info">
+                        You must wait for your employee to respond before further actions can be taken.
+                      </div>
+                    }            
+                    {this.state.role === 'Employee' && this.props.review.status === 'Ready' &&
+                      <div>
+                        <p><i>By acknowledging, you affirm that you have read your supervisor's answers and discussed them with your supervisor.</i></p>
+                        <RadioGroup
+                          name="workflow"
+                          selectedValue={this.state.actionRadio}
+                          onChange={(val) => (this.setState({actionRadio: val}))}
+                          >
+                            <label>
+                              <Radio value="saveonly" />Save only
+                            </label>
+                            <label>
+                              <Radio value="acknowledge" />Acknowledge
+                            </label>
+                            <label>
+                              <Radio value="return" />Further discussion requested
+                            </label>                          
+                        </RadioGroup>
+                        <input type="button" className="btn btn-primary" value="Save" onClick={this.handleSubmit}/>
+                      </div>
+                    }
+                    {this.state.role === 'Employee' && this.props.review.status === 'Open' &&
+                      <div className="alert alert-info">
+                        Your supervisor has not yet released their answers for your response.
+                      </div>
+                    }                        
+                  </fieldset>
+                </div>
+              }
+            </div>
           </div>
-          <div className="form-group">
-            {props.review.questions.map((question, index) => (
-              <Question key={['question', index].join('_')} question={question} response={getResponse(question.id, props.review.responses)} />
-            ))}
-          </div>
-          <div className="form-group">
-            <h2>Action</h2>
-            TODO: Depending on Status determine the options here
-          </div>
-        </div>
+        </form>
       </div>
-    </form>
-  </div>
-);
+    );
+  }
+}
 
 const questionShape = {
   id: PropTypes.number,

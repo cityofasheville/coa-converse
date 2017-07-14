@@ -18,9 +18,10 @@ class RichTextEditor extends React.Component {
         plugins: 'link image code',
         toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | indent outdent | code',
         branding: false,
-        readonly: !this.props.answereditable,
-        content_style: !this.props.answereditable ? "body { background-color: rgb(248, 248, 248) !important; }* { cursor: not-allowed }" : "body { background: #fff }",
+        readonly: !this.props.editable,
+        content_style: !this.props.editable ? "body { background-color: rgb(248, 248, 248) !important; }* { cursor: not-allowed }" : "body { background: #fff }",
       }}
+      onChange={this.props.onChange}
     />
   }
 }
@@ -28,11 +29,12 @@ class RichTextEditor extends React.Component {
 RichTextEditor.propTypes = {
   id: PropTypes.string.isRequired,
   content: PropTypes.string,
-  answereditable: PropTypes.bool,
+  editable: PropTypes.bool,
+  onChange: PropTypes.func,
 };
 
 RichTextEditor.defaultProps = {
-  answereditable: true,
+  editable: true,
 };
 
 export default RichTextEditor;

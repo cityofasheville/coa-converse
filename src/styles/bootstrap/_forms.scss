@@ -24,6 +24,14 @@ fieldset.detailsFieldset {
   margin-bottom: 10px;
 }
 
+fieldset.reviewQuestionFieldset {
+  margin-bottom: 25px;
+  legend {
+    border-bottom: 1px solid #e5e5e5;
+    font-size: 32px;
+  }
+}
+
 legend {
   display: block;
   width: 100%;

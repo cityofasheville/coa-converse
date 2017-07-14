@@ -1,7 +1,7 @@
 import React from 'react';
-import TinyMCE from 'react-tinymce';
 import { RadioGroup, Radio } from 'react-radio-group';
 import PropTypes from 'prop-types';
+import RichTextEditor from '../shared/RichTextEditor';
 
 const markup = (stringValue) => {
   return { __html: stringValue };
@@ -25,12 +25,10 @@ class Question extends React.Component {
       <fieldset className="reviewQuestionFieldset">
         <div dangerouslySetInnerHTML={markup(this.props.question.question)} />
         {this.props.question.type === 'Text' &&
-          <TinyMCE
+          <RichTextEditor
+            id={['qanswer', this.props.question.id].join('-')}
             content={this.props.question.answer}
-            config={{
-              plugins: 'link image code',
-              toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | indent outdent | code'
-            }}
+            answereditable={this.props.editable}
           />
         }
         {this.props.question.type === 'Y/N' &&
@@ -73,6 +71,11 @@ const responseShape = {
 
 Question.propTypes = {
   question: PropTypes.shape(questionShape),
+  editable: PropTypes.bool,
+};
+
+Question.defaultProps = {
+  editable: true,
 };
 
 export default Question;

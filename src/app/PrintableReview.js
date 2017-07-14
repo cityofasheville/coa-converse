@@ -1,9 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router';
-import { Radio, RadioGroup } from 'react-radio-group';
-import DatePickerWrapper from '../shared/DatePickerWrapper';
-import Question from './Question';
 
 const testEmployees = [
     {
@@ -41,37 +37,15 @@ const testEmployees = [
     reviews: [
       {
         id: 56,
-        status: 'Open',
+        status: 'Closed',
         supervisor_id: 123,
         employee_id: 6645,
         position: 'Most Awesomest Coder Ever',
         periodStart: '6/23/2017',
         periodEnd: '9/21/2017',
         reviewer_name: 'Scott Barnwell',
-        employee_name: 'FRANCES C RUIZ',
-        questions: [
-          {
-            id: 1,
-            type: 'Text',
-            question: '<legend>Current Responsibilities</legend><p>Describe any significant changes in responsibilities since last 1:1 meeting.',
-            answer: 'No changes, but she does everything under the sun and then some.',
-            required: true,
-          },
-          {
-            id: 2,
-            type: 'Text',
-            question: '<legend>Performance</legend><p>General comments regarding job performance based on:</p><ul style="list-style-type: circle;"><li>Technical job</li><li>Progress / achievement of established expectations &amp; goals since the last 1:1</li><li>Assessment of accomplishments and any behavioral competencies</li></ul><p>General comments regarding the staff member&apos;s job performance.</p><p>Describe any areas of performance needing more attention or improvement.(provide specific examples)</p><p>Describe any areas of exceptional performance. (provide specific examples)</p>',
-            answer: 'Best employee EVER!!!!',
-            required: true,
-          },
-          {
-            id: 3,
-            type: 'Y/N',
-            question: '<legend>Up to par</legend><p>Is this employee up to par?</p>',
-            answer: '1',
-            required: true,
-          }
-        ],
+        employee_name: 'sbarnwell@ashevillenc.gov',
+        questions: [],
         responses: [],
       }
     ],
@@ -156,52 +130,11 @@ const testEmployees = [
   },
 ];
 
-const getResponse = (questionId, responses) => {
-  //assumes 1:1 relationship between a question and a response
-  for (response of responses) {
-    if (questionId === response.question_id) {
-      return response;
-    }
-  }
-  return null;
-}
-
-const Review = props => (
-  <div>
-    <form>
-      <div className="row form-horizontal">
-        <h1>Conversation between {props.review.employee_name} and supervisor {props.review.reviewer_name}</h1>
-        <Link className="pull-right" style={{ fontSize: '20px' }} to={{ pathname: 'printableReview', query: {emp: props.review.employee_id, rev: props.review.id}} }>Printable Version</Link>
-        <div className="col-sm-12">
-          <div className="form-group">
-            <fieldset className="reviewQuestionFieldset">
-              <legend>Period</legend>
-              <div className="col-sm-6 col-xs-12" style={{ marginBottom: '10px' }}>
-                <label htmlFor="startDate" className="col-xs-2" style={{ textAlign: 'right'}}>From: </label>
-                <div className="col-xs-4">
-                  <DatePickerWrapper startDate={props.review.periodStart} id="startDate" />
-                </div>
-              </div>
-              <div className="col-sm-6 col-xs-12">
-                <label htmlFor="endDate" className="col-xs-2" style={{ textAlign: 'right'}}>To: </label>
-                <div className="col-xs-4">
-                  <DatePickerWrapper endDate={props.review.periodEnd} id="startDate" />
-                </div>
-              </div>
-            </fieldset>
-          </div>
-          <div className="form-group">
-            {props.review.questions.map((question, index) => (
-              <Question key={['question', index].join('_')} question={question} response={getResponse(question.id, props.review.responses)} />
-            ))}
-          </div>
-          <div className="form-group">
-            <h2>Action</h2>
-            TODO: Depending on Status determine the options here
-          </div>
-        </div>
-      </div>
-    </form>
+const PrintableReview = props => (
+  <div className="row">
+    <div className="col-sm-12">
+      Pretty for printing
+    </div>
   </div>
 );
 
@@ -234,12 +167,11 @@ const reviewShape = {
   responses: PropTypes.arrayOf(PropTypes.shape(responseShape)),
 };
 
-Review.propTypes = {
+PrintableReview.propTypes = {
   review: PropTypes.shape(reviewShape), // eslint-disable-line
 };
 
-Review.defaultProps = {
+PrintableReview.defaultProps = {
   review: testEmployees[1].reviews[0],
 };
-
-export default Review;
+export default PrintableReview;

@@ -21,7 +21,8 @@ const EmployeeHome = (props) => {
       if (props.location.query.mode == 'conversations') {
         return <Reviews />
       }
-      return <Employees />
+      //the userId being passed in here is for testing - TODO: Remove
+      return <Employees userId={1316} />
     }
     return <Reviews />
   }

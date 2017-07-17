@@ -9,11 +9,11 @@ export const Navbar = (props) => (
     <nav className="navbar navbar-default" style={{ backgroundColor: '#f6fcff'}}>
       <div className="container-fluid">
         <div className="pull-left" style={{ marginRight: '5px', marginTop: '5px', marginBottom: '5px' }}>
-          <a href="http://www.ashevillenc.gov" target="_blank"><img src={require('./citylogo-flatblue.png')} width="80px" height="80px" alt="City of Asheville logo"></img></a>
+          <IndexLink to="/"><img src={require('./citylogo-flatblue.png')} width="80px" height="80px" alt="City of Asheville logo"></img></IndexLink>
         </div>
         <div className="navbar-header">
           <div className="pull-left">
-            <IndexLink to="/" className="navbar-brand" style={{ fontSize: '30px', marginBottom: '-10px' }}>Conversations</IndexLink>
+            <IndexLink to="/" className="navbar-brand" style={{ fontSize: '30px', marginBottom: '-10px' }}>Talent Development Conversations</IndexLink>
             <br />
             <a href="http://www.ashevillenc.gov" target="_blank" style={{ fontSize: '12px', fontStyle: 'italic' }}>City of Asheville, NC</a>
           </div>

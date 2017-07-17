@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import ReactTable from 'react-table';
+import moment from 'moment';
 import { Link } from 'react-router';
 
 // const getLastConversationCompleted = (employee) => {
@@ -25,7 +26,7 @@ const dataColumnsCurrent = [
   {
     Header: 'Period',
     id: 'period',
-    accessor: (review) => (<span>{review.periodStart} - {review.periodEnd}</span>),
+    accessor: (review) => (<span>{moment(review.periodStart).format('M/DD/YYYY')} - {moment(review.periodEnd).format('M/DD/YYYY')}</span>),
     minWidth: 200,
     Cell: (row) => (
       <Link to={{ pathname: 'conversation', query: { emp: row.original.employee_id, rev: row.original.id } }}>{row.value}</Link>
@@ -38,7 +39,8 @@ const dataColumnsCurrent = [
   },
   {
     Header: 'Last Change',
-    accessor: 'status_date',
+    id: 'status_date',
+    accessor: (review) => (<span>{moment(review.status_date).format('M/DD/YYYY')}</span>),
     maxWidth: 200,
     minWidth: 130,
   },
@@ -48,7 +50,7 @@ const dataColumns = [
   {
     Header: 'Period',
     id: 'period',
-    accessor: (review) => (<span>{review.periodStart} - {review.periodEnd}</span>),
+    accessor: (review) => (<span>{moment(review.periodStart).format('M/DD/YYYY')} - {moment(review.periodEnd).format('M/DD/YYYY')}</span>),
     minWidth: 200,
     Cell: (row) => (
       <Link to={{ pathname: 'conversation', query: { emp: row.original.employee_id, rev: row.original.id } }}>{row.value}</Link>
@@ -56,12 +58,13 @@ const dataColumns = [
   },
   {
     Header: 'Date Completed',
-    accessor: 'status_date',
+    id: 'date_completed',
+    accessor: (review) => (<span>{moment(review.status_date).format('M/DD/YYYY')}</span>),
     maxWidth: 200,
     minWidth: 130,
   },
   {
-    Header: 'Reviewer',
+    Header: 'Supervisor',
     accessor: 'reviewer_name',
     minWidth: 300,
   }

@@ -62,3 +62,12 @@
   height: 1px;
   overflow: hidden;
 }
+
+.invalid {
+  input[type="text"] {
+    border: 2px solid red;
+  }
+  input[type="text"]:focus {
+    outline: red auto 5px;
+  }
+}

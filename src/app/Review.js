@@ -189,17 +189,23 @@ const getMainReviewResponse = (responses) => {
   return null;
 }
 
+const validate = (startDate, endDate) => {
+  return {
+    startDate: startDate == null,
+    endDate: endDate == null,
+  };
+}
+
 class Review extends React.Component {
   constructor(props) {
     super(props);
     //figure out if the answers are editable, etc
     let role = 'Employee'; //todo set properly according to if employee_id matches the logged in user's or not
     this.state = {
-      periodStart: this.props.review.startDate,
-      periodEnd: this.props.review.endDate,
+      periodStart: this.props.review.periodStart,
+      periodEnd: this.props.review.periodEnd,
       questions: this.props.review.questions,
       responses: this.props.review.responses,
-      validationErrors: {},
       role: role,
       answersEditable: this.props.review.status === 'Open' && role === 'Supervisor' ? true : false,
       responsesEditable: this.props.review.status === 'Ready' && role === 'Employee' ? true : false,
@@ -207,12 +213,33 @@ class Review extends React.Component {
     }
     this.handleSubmit = this.handleSubmit.bind(this);
   }
-    
+
   handleSubmit(event) {
+    if (this.hasErrors()) {
+      event.preventDefault();
+      console.log('errors on form!');
+      return;
+    }
     console.log('you are submitting');
+  }
+
+  handleStartDateChange(value) {
+    this.setState({ periodStart: value !== null ? value.format('M/DD/YYYY') : value});
+  }
+
+  handleEndDateChange(value) {
+    this.setState({ periodEnd: value != null ? value.format('M/DD/YYYY') : value });
+  }
+
+  hasErrors() {
+    const validationErrors = validate(this.state.periodStart, this.state.periodEnd);
+    const invalid = Object.keys(validationErrors).some(x => validationErrors[x]);
+    return invalid;
   }
   
   render() {
+    const validationErrors = validate(this.state.periodStart, this.state.periodEnd);
+
     return (
       <div>
         <form>
@@ -225,14 +252,20 @@ class Review extends React.Component {
                   <legend>Period</legend>
                   <div className="col-sm-6 col-xs-12" style={{ marginBottom: '10px' }}>
                     <label htmlFor="startDate" className="col-xs-2" style={{ textAlign: 'right'}}>From: </label>
-                    <div className="col-xs-4">
-                      <DatePickerWrapper startDate={this.props.review.periodStart} id="startDate" onChange={(value) => (console.log(value._i))} />
+                    <div className={validationErrors.startDate ? "col-xs-4 invalid" : "col-xs-4"}>
+                      <DatePickerWrapper startDate={this.props.review.periodStart} id="startDate" onChange={(value) => this.handleStartDateChange(value)} />
+                      {validationErrors.startDate &&
+                        <span style={{ color: 'red', fontWeight: 'bold'}}>&apos;From&apos; date is required</span>
+                      }                        
                     </div>
                   </div>
-                  <div className="col-sm-6 col-xs-12">
+                  <div className={validationErrors.endDate ? "col-sm-6 col-xs-12 invalid" : "col-sm-6 col-xs-12"}>
                     <label htmlFor="endDate" className="col-xs-2" style={{ textAlign: 'right'}}>To: </label>
                     <div className="col-xs-4">
-                      <DatePickerWrapper endDate={this.props.review.periodEnd} id="startDate" onChange={(value) => (console.log(value._i))} />
+                      <DatePickerWrapper endDate={this.props.review.periodEnd} id="endDate" onChange={(value) => this.handleEndDateChange(value)} />
+                      {validationErrors.endDate &&
+                        <span style={{ color: 'red', fontWeight: 'bold'}}>&apos;To&apos; date is required</span>
+                      }
                     </div>
                   </div>
                 </fieldset>

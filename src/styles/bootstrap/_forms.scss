@@ -103,6 +103,11 @@ output {
   color: $input-color;
 }
 
+input[type="text"] {
+  &.invalid {
+    border: 2px solid red !important;
+  }
+}
 
 // Common form controls
 //

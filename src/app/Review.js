@@ -2,172 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router';
 import { Radio, RadioGroup } from 'react-radio-group';
+import moment from 'moment';
 import DatePickerWrapper from '../shared/DatePickerWrapper';
 import Question from './Question';
 import Response from './Response';
-
-const testEmployees = [
-    {
-    id: 6409,
-    reviewable: false,
-    active: true,
-    name: 'ADAM D GRIFFITH',
-    email: 'agriffith@ashevillenc.gov',
-    position: null,
-    department: 'IT',
-    division: 'BPT',
-    last_reviewed: '',
-    review_by: '',
-    supervisor_id: 123,
-    supervisor_name: 'Scott Barnwell',
-    supervisor_email: 'sbarnwell@ashevillenc.gov',
-    employees: [],
-    reviews: [],
-  },
-  {
-    id: 6645,
-    active: true,
-    reviewable: true,
-    name: 'FRANCES C RUIZ',
-    email: 'fruiz@ashevillenc.gov',
-    position: 'Most Awesomest Coder Ever',
-    department: 'IT',
-    division: 'BPT',
-    last_reviewed: '06/23/2017',
-    review_by: 'Scott Barnwell',
-    supervisor_id: 123,
-    supervisor_name: 'Scott Barnwell',
-    supervisor_email: 'sbarnwell@ashevillenc.gov',
-    employees: [],
-    reviews: [
-      {
-        id: 56,
-        status: 'Ready',
-        supervisor_id: 123,
-        employee_id: 6645,
-        position: 'Most Awesomest Coder Ever',
-        periodStart: '6/23/2017',
-        periodEnd: '9/21/2017',
-        reviewer_name: 'Scott Barnwell',
-        employee_name: 'FRANCES C RUIZ',
-        questions: [
-          {
-            id: 1,
-            type: 'Text',
-            question: '<legend>Current Responsibilities</legend><p>Describe any significant changes in responsibilities since last 1:1 meeting.',
-            answer: 'No changes, but she does everything under the sun and then some.',
-            required: true,
-          },
-          {
-            id: 2,
-            type: 'Text',
-            question: '<legend>Performance</legend><p>General comments regarding job performance based on:</p><ul style="list-style-type: circle;"><li>Technical job</li><li>Progress / achievement of established expectations &amp; goals since the last 1:1</li><li>Assessment of accomplishments and any behavioral competencies</li></ul><p>General comments regarding the staff member&apos;s job performance.</p><p>Describe any areas of performance needing more attention or improvement.(provide specific examples)</p><p>Describe any areas of exceptional performance. (provide specific examples)</p>',
-            answer: 'Best employee EVER!!!!',
-            required: true,
-          },
-          {
-            id: 3,
-            type: 'Y/N',
-            question: '<legend>Satisfactory</legend><p>Is this employee satisfactorily fullfilling their duties?</p>',
-            answer: 'Y',
-            required: true,
-          }
-        ],
-        responses: [
-          {
-            question_id: 2,
-            review_id: 56,
-            Response: 'This is a resposne to the question for testing.',
-          },
-          {
-            question_id: -1,
-            review_id: 56,
-            Response: 'My overall response is that I do not like getting reviewed at all!',
-          }
-
-        ],
-      }
-    ],
-  },
-  {
-    id: 1337,
-    active: true,
-    reviewable: true,
-    name: 'CHRISTEN E MCNAMARA',
-    email: 'cmcnamara@ashevillenc.gov',
-    position: 'Most Awesomest GIS Whiz Ever',
-    department: 'IT',
-    division: 'BPT',
-    last_reviewed: '',
-    review_by: '',
-    supervisor_id: 123,
-    supervisor_name: 'Scott Barnwell',
-    supervisor_email: 'sbarnwell@ashevillenc.gov',
-    employees: [],
-    reviews: [],
-  },
-  {
-    id: 5912,
-    active: false,
-    reviewable: false,
-    name: 'EDWARD C CARLYLE',
-    email: '',
-    position: 'The One who Went to Utah',
-    department: 'IT',
-    division: 'BPT',
-    last_reviewed: '',
-    review_by: '',
-    supervisor_id: 123,
-    supervisor_name: 'Scott Barnwell',
-    supervisor_email: 'sbarnwell@ashevillenc.gov',
-    employees: [],
-    reviews: [],
-  },
-  {
-    id: 6507,
-    active: true,
-    reviewable: true,
-    name: 'PHILIP E JACKSON',
-    email: 'ejackson@ashevillenc.gov',
-    position: 'Most Awesomest Tech Guru Ever',
-    department: 'IT',
-    division: 'BPT',
-    last_reviewed: '6/29/2017',
-    review_by: 'Scott Barnwell',
-    supervisor_id: 123,
-    supervisor_name: 'Scott Barnwell',
-    supervisor_email: 'sbarnwell@ashevillenc.gov',
-    employees: [],
-    reviews: [
-      {
-        id: 15,
-        status: 'Ready',
-        supervisor_id: 123,
-        employee_id: 6507,
-        position: 'Most Awesomest Tech Guru Ever',
-        periodStart: '6/29/2017',
-        periodEnd: '9/27/2017',
-        reviewer_name: 'Scott Barnwell',
-        employee_name: 'sbarnwell@ashevillenc.gov',
-        questions: [],
-        responses: [],
-      },
-      {
-        id: 152,
-        status: 'Closed',
-        supervisor_id: 123,
-        employee_id: 6507,
-        position: 'Most Awesomest Tech Guru Ever',
-        periodStart: '4/06/2017',
-        periodEnd: '7/07/2017',
-        reviewer_name: 'Scott Barnwell',
-        employee_name: 'sbarnwell@ashevillenc.gov',
-        questions: [],
-        responses: [],
-      }
-    ],
-  },
-];
 
 const getResponse = (questionId, responses) => {
   //assumes 1:1 relationship between a question and a response
@@ -179,10 +17,9 @@ const getResponse = (questionId, responses) => {
   return null;
 }
 
-//will main response have question_id as -1? will it exist always or do we need to return an empty obj here
 const getMainReviewResponse = (responses) => {
   for (let response of responses) {
-    if (response.question_id === -1) {
+    if (response.question_id === null) {
       return response;
     }
   }
@@ -206,11 +43,12 @@ class Review extends React.Component {
       periodEnd: this.props.review.periodEnd,
       questions: this.props.review.questions,
       responses: this.props.review.responses,
-      role: role,
+      role: this.props.review.employee_id === this.props.userId ? 'Employee' : 'Supervisor',
       answersEditable: this.props.review.status === 'Open' && role === 'Supervisor' ? true : false,
       responsesEditable: this.props.review.status === 'Ready' && role === 'Employee' ? true : false,
       actionRadio: 'saveonly', //todo set appropriate action value based on other vars
     }
+    console.log(this.props, this.state);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
@@ -253,18 +91,28 @@ class Review extends React.Component {
                   <div className="col-sm-6 col-xs-12" style={{ marginBottom: '10px' }}>
                     <label htmlFor="startDate" className="col-xs-2" style={{ textAlign: 'right'}}>From: </label>
                     <div className={validationErrors.startDate ? "col-xs-4 invalid" : "col-xs-4"}>
-                      <DatePickerWrapper startDate={this.props.review.periodStart} id="startDate" onChange={(value) => this.handleStartDateChange(value)} />
-                      {validationErrors.startDate &&
+                      {this.state.answersEditable &&
+                        <DatePickerWrapper startDate={new Date(this.state.periodStart)} id="startDate" onChange={(value) => this.handleStartDateChange(value)} />
+                      }
+                      {this.state.answersEditable && validationErrors.startDate &&
                         <span style={{ color: 'red', fontWeight: 'bold'}}>&apos;From&apos; date is required</span>
                       }                        
+                      {!this.state.answersEditable && 
+                        <span>{moment(new Date(this.state.periodStart)).format('M/DD/YYYY')}</span>
+                      }
                     </div>
                   </div>
                   <div className={validationErrors.endDate ? "col-sm-6 col-xs-12 invalid" : "col-sm-6 col-xs-12"}>
                     <label htmlFor="endDate" className="col-xs-2" style={{ textAlign: 'right'}}>To: </label>
                     <div className="col-xs-4">
-                      <DatePickerWrapper endDate={this.props.review.periodEnd} id="endDate" onChange={(value) => this.handleEndDateChange(value)} />
-                      {validationErrors.endDate &&
+                      {this.state.answersEditable &&
+                        <DatePickerWrapper endDate={new Date(this.props.review.periodEnd)} id="endDate" onChange={(value) => this.handleEndDateChange(value)} />
+                      }
+                      {this.state.answersEditable && validationErrors.endDate &&
                         <span style={{ color: 'red', fontWeight: 'bold'}}>&apos;To&apos; date is required</span>
+                      }
+                      {!this.state.answersEditable && 
+                        <span>{moment(new Date(this.state.periodEnd)).format('M/DD/YYYY')}</span>
                       }
                     </div>
                   </div>
@@ -332,7 +180,7 @@ class Review extends React.Component {
                     }            
                     {this.state.role === 'Employee' && this.props.review.status === 'Ready' &&
                       <div>
-                        <p><i>By acknowledging, you affirm that you have read your supervisor's answers and discussed them with your supervisor.</i></p>
+                        <p><i>By acknowledging, you affirm that you have read your supervisor's feedback and discussed it with your supervisor.</i></p>
                         <RadioGroup
                           name="workflow"
                           selectedValue={this.state.actionRadio}
@@ -353,7 +201,7 @@ class Review extends React.Component {
                     }
                     {this.state.role === 'Employee' && this.props.review.status === 'Open' &&
                       <div className="alert alert-info">
-                        Your supervisor has not yet released their answers for your response.
+                        Your supervisor has not yet released their feedback for your response.
                       </div>
                     }                        
                   </fieldset>
@@ -400,8 +248,12 @@ Review.propTypes = {
   review: PropTypes.shape(reviewShape), // eslint-disable-line
 };
 
-Review.defaultProps = {
-  review: testEmployees[1].reviews[0],
-};
-
 export default Review;
+
+// const mapStateToProps = state => (
+//   {
+//     userId: state.employee.employeeId,
+//   }
+// );
+
+// export default connect(mapStateToProps)(Review);

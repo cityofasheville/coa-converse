@@ -1,15 +1,22 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
 import { browserHistory } from 'react-router';
 import { RadioGroup, Radio } from 'react-radio-group';
 import Reviews from './Reviews';
 import Employees from './Employees';
+import LoadingAnimation from '../shared/LoadingAnimation';
 
 const EmployeeHome = (props) => {
-  const isSupervisor = (user) => {
-    // depending on if supervisor or not, start on My Employees page or My Conversations
-    // should just be an attribute of user but this function is for testing
-    return true;
+  if (props.data.loading) { // eslint-disable-line react/prop-types
+    return <LoadingAnimation />;
+  }
+  if (props.data.error) { // eslint-disable-line react/prop-types
+    return <p>{props.data.error.message}</p>; // eslint-disable-line react/prop-types
+  }
+
+  const isSupervisor = () => {
+    return props.data.employee.employees.length > 0;
   }
 
   const refreshLocation = (value) => {
@@ -17,14 +24,13 @@ const EmployeeHome = (props) => {
   };
 
   const displayContents = () => {
-    if (isSupervisor(props.user)) {
+    if (isSupervisor()) {
       if (props.location.query.mode == 'conversations') {
-        return <Reviews />
+        return <Reviews {...props} />
       }
-      //the userId being passed in here is for testing - TODO: Remove
-      return <Employees userId={1316} />
+      return <Employees {...props} />
     }
-    return <Reviews />
+    return <Reviews {...props} />
   }
 
   return (
@@ -46,10 +52,15 @@ const EmployeeHome = (props) => {
   );
 };
 
-const mapStateToProps = state => (
-  {
-    user: state.auth.user,
+const getEmployeeQuery = gql`
+  query getEmployeeQuery {
+    employee {
+      id
+      employees {
+        id
+      }
+    }
   }
-);
+`;
 
-export default connect(mapStateToProps)(EmployeeHome);
+export default graphql(getEmployeeQuery, {})(EmployeeHome);

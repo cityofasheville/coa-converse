@@ -57,7 +57,12 @@ a {
     div {
       text-decoration: $link-hover-decoration;
     }
+    &.nounderline {
+      text-decoration: none !important;
+      color: $link-hover-color !important;
+    }
   }
+
 
   &:focus {
     @include tab-focus;

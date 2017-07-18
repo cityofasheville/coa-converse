@@ -13,9 +13,12 @@ export const Navbar = (props) => (
         </div>
         <div className="navbar-header">
           <div className="pull-left">
-            <IndexLink to="/" className="navbar-brand" style={{ fontSize: '30px', marginBottom: '-10px' }}>Talent Development Conversations</IndexLink>
-            <br />
-            <a href="http://www.ashevillenc.gov" target="_blank" style={{ fontSize: '12px', fontStyle: 'italic' }}>City of Asheville, NC</a>
+            <IndexLink to="/" className="navbar-brand nounderline" >
+              <span style={{ fontSize: '30px', marginBottom: '-10px' }}>Talent Development Conversations
+              </span>
+              <br />
+              <span style={{ fontStyle: 'italic', fontSize: '13px' }}>City of Asheville, NC</span>
+            </IndexLink>
           </div>
         </div>
         <div className="pull-right" style={{ paddingTop: '15px' }}>

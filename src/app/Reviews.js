@@ -225,10 +225,6 @@ Reviews.propTypes = {
   employee: PropTypes.shape(employeeShape), // eslint-disable-line
 };
 
-// Reviews.defaultProps = {
-//   employee: testEmployees[4],
-// }
-
 const getReviewsQuery = gql`
   query getReviewsQuery($id: Int) {
     employee (id: $id) {
@@ -250,7 +246,7 @@ const getReviewsQuery = gql`
 const ReviewsGQL = graphql(getReviewsQuery, {
   options: (ownProps)=> ({
     variables: {
-      id: ownProps.location.query.emp //for testing
+      id: ownProps.location.query.emp,
     }
   })
 })(Reviews);

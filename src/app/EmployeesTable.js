@@ -136,7 +136,7 @@ import { IM_WARNING2, IM_HOURGLASS } from '../shared/iconConstants';
 // ];
 
 const getTimeSinceLastConversation = (employee) => {
-  if (!employee.active) { //if (!employee.reviewable) {
+  if (!employee.reviewable) {
     return <span>--</span>;
   }
   const lastReviewedDate = moment(employee.last_reviewed).format('M/DD/YYYY');

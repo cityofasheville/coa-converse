@@ -34,6 +34,7 @@ const getEmployeesQuery = gql`
         active
         name
         current_review
+        reviewable
         review_by
         last_reviewed
       }

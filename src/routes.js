@@ -12,7 +12,6 @@ import App from './app/App';
 import Home from './app/Home';
 import Reviews from './app/Reviews';
 import ReviewContainer from './app/ReviewContainer';
-import PrintableReview from './app/PrintableReview';
 
 const Routes = props => (
   <ApolloProvider store={props.store} client={client} >
@@ -21,7 +20,6 @@ const Routes = props => (
         <IndexRoute component={Home} />
         <Route path="conversations" component={Reviews}></Route>
         <Route path="conversation" component={ReviewContainer}></Route>
-        <Route path="printableConversation" component={PrintableReview}></Route>
       </Route>
     </Router>
   </ApolloProvider>

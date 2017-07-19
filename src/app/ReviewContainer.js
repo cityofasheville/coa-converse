@@ -4,6 +4,7 @@ import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import { connect } from 'react-redux';
 import Review from './Review';
+import PrintableReview from './Review';
 import LoadingAnimation from '../shared/LoadingAnimation';
 
 const ReviewContainer = props => {
@@ -15,7 +16,7 @@ const ReviewContainer = props => {
   }
 
   return (
-    <Review review={props.data.review} userId={props.data.employee.id} />
+    <Review review={props.data.review} userId={props.data.employee.id} printable={props.location.query.printable === 'yes'} location={props.location} />
   );
 }
 

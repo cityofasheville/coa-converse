@@ -6,6 +6,7 @@ import moment from 'moment';
 import DatePickerWrapper from '../shared/DatePickerWrapper';
 import Question from './Question';
 import Response from './Response';
+import PrintableReview from './PrintableReview';
 
 const getResponse = (questionId, responses) => {
   //assumes 1:1 relationship between a question and a response
@@ -37,7 +38,7 @@ class Review extends React.Component {
   constructor(props) {
     super(props);
     //figure out if the answers are editable, etc
-    let role = 'Employee'; //todo set properly according to if employee_id matches the logged in user's or not
+    let role = this.props.review.employee_id === this.props.userId ? 'Employee' : 'Supervisor';
     this.state = {
       periodStart: this.props.review.periodStart,
       periodEnd: this.props.review.periodEnd,
@@ -48,7 +49,6 @@ class Review extends React.Component {
       responsesEditable: this.props.review.status === 'Ready' && role === 'Employee' ? true : false,
       actionRadio: 'saveonly', //todo set appropriate action value based on other vars
     }
-    console.log(this.props, this.state);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
@@ -80,136 +80,147 @@ class Review extends React.Component {
 
     return (
       <div>
-        <form>
-          <div className="row form-horizontal">
-            <h1>Conversation between {this.props.review.employee_name} and supervisor {this.props.review.reviewer_name}</h1>
-            <Link className="pull-right" style={{ fontSize: '20px' }} to={{ pathname: 'printableConversation', query: {emp: this.props.review.employee_id, rev: this.props.review.id}} }>Printable Version</Link>
-            <div className="col-sm-12">
-              <div className="form-group">
-                <fieldset className="reviewQuestionFieldset">
-                  <legend>Period</legend>
-                  <div className="col-sm-6 col-xs-12" style={{ marginBottom: '10px' }}>
-                    <label htmlFor="startDate" className="col-xs-2" style={{ textAlign: 'right'}}>From: </label>
-                    <div className={validationErrors.startDate ? "col-xs-4 invalid" : "col-xs-4"}>
-                      {this.state.answersEditable &&
-                        <DatePickerWrapper startDate={new Date(this.state.periodStart)} id="startDate" onChange={(value) => this.handleStartDateChange(value)} />
-                      }
-                      {this.state.answersEditable && validationErrors.startDate &&
-                        <span style={{ color: 'red', fontWeight: 'bold'}}>&apos;From&apos; date is required</span>
-                      }                        
-                      {!this.state.answersEditable && 
-                        <span>{moment(new Date(this.state.periodStart)).format('M/DD/YYYY')}</span>
-                      }
-                    </div>
-                  </div>
-                  <div className={validationErrors.endDate ? "col-sm-6 col-xs-12 invalid" : "col-sm-6 col-xs-12"}>
-                    <label htmlFor="endDate" className="col-xs-2" style={{ textAlign: 'right'}}>To: </label>
-                    <div className="col-xs-4">
-                      {this.state.answersEditable &&
-                        <DatePickerWrapper endDate={new Date(this.props.review.periodEnd)} id="endDate" onChange={(value) => this.handleEndDateChange(value)} />
-                      }
-                      {this.state.answersEditable && validationErrors.endDate &&
-                        <span style={{ color: 'red', fontWeight: 'bold'}}>&apos;To&apos; date is required</span>
-                      }
-                      {!this.state.answersEditable && 
-                        <span>{moment(new Date(this.state.periodEnd)).format('M/DD/YYYY')}</span>
-                      }
-                    </div>
-                  </div>
-                </fieldset>
-              </div>
-              <div className="form-group">
-                {this.props.review.questions.map((question, index) => (
-                  <div key={['question', index].join('_')}>
-                    <Question question={question} editable={this.state.answersEditable} onChange={question.type === 'Text' ? ((value) => (console.log(value.level.content))) : ((value) => (console.log(value)))}/>
-                    {getResponse(question.id, this.props.review.responses) !== null &&
-                      <Response response={getResponse(question.id, this.props.review.responses)} editable={this.state.responsesEditable} onChange={(value) => (console.log(value.level.content))} />
-                    }
-                  </div>
-                ))}
-              </div>
-              <div className="form-group">
-                <Response response={getMainReviewResponse(this.props.review.responses)} standalone editable={this.state.responsesEditable} onChange={(value) => (console.log(value.level.content))} />
-              </div>
-              {this.props.review.status !== 'Closed' &&
+        {this.props.location.query.printable === 'yes' && 
+          <PrintableReview review={this.props.review} />
+        }
+        {this.props.location.query.printable !== 'yes' &&
+          <form>
+            <div className="row form-horizontal">
+              <h1>Conversation between {this.props.review.employee_name} and supervisor {this.props.review.reviewer_name}</h1>
+              <Link className="pull-right" style={{ fontSize: '20px' }} to={{ pathname: 'conversation', query: {emp: this.props.review.employee_id, rev: this.props.review.id, printable: 'yes'}} }>Printable Version</Link>
+              <div className="col-sm-12">
                 <div className="form-group">
                   <fieldset className="reviewQuestionFieldset">
-                    <legend>Action</legend>
-                    {this.state.role === 'Supervisor' && this.props.review.status === 'Open' &&
-                      <div>
-                        <p><i>Please discuss your answers with your employee before submittion for their acknowledgement.</i></p>
-                        <RadioGroup
-                          name="workflow"
-                          selectedValue={this.state.actionRadio}
-                          onChange={(val) => (this.setState({actionRadio: val}))}
-                          >
-                            <label>
-                              <Radio value="saveonly" />Save only
-                            </label>
-                            <label>
-                              <Radio value="sendack" />Submit for employee acknowledgement
-                            </label>
-                        </RadioGroup>
-                        <input type="button" className="btn btn-primary" value="Save" onClick={this.handleSubmit}/>
+                    <legend>Period</legend>
+                    <div className="col-sm-6 col-xs-12" style={{ marginBottom: '10px' }}>
+                      <label htmlFor="startDate" className="col-xs-2" style={{ textAlign: 'right'}}>From: </label>
+                      <div className={validationErrors.startDate ? "col-xs-4 invalid" : "col-xs-4"}>
+                        {this.state.answersEditable &&
+                          <DatePickerWrapper startDate={new Date(this.state.periodStart)} id="startDate" onChange={(value) => this.handleStartDateChange(value)} />
+                        }
+                        {this.state.answersEditable && validationErrors.startDate &&
+                          <span style={{ color: 'red', fontWeight: 'bold'}}>&apos;From&apos; date is required</span>
+                        }                        
+                        {!this.state.answersEditable && 
+                          <span>{moment(new Date(this.state.periodStart)).format('M/DD/YYYY')}</span>
+                        }
                       </div>
-                    }
-                    {this.state.role === 'Supervisor' && this.props.review.status === 'Acknowledged' &&
-                      <div>
-                        <RadioGroup
-                          name="workflow"
-                          selectedValue={this.state.actionRadio}
-                          onChange={(val) => (this.setState({actionRadio: val}))}
-                          >
-                            <label>
-                              <Radio value="saveonly" />Save only
-                            </label>
-                            <label>
-                              <Radio value="reopen" />Re-open
-                            </label>                          
-                            <label>
-                              <Radio value="close" />Submit to HR record
-                            </label>
-                        </RadioGroup>
-                        <input type="button" className="btn btn-primary" value="Save" onClick={this.handleSubmit}/>
+                    </div>
+                    <div className={validationErrors.endDate ? "col-sm-6 col-xs-12 invalid" : "col-sm-6 col-xs-12"}>
+                      <label htmlFor="endDate" className="col-xs-2" style={{ textAlign: 'right'}}>To: </label>
+                      <div className="col-xs-4">
+                        {this.state.answersEditable &&
+                          <DatePickerWrapper endDate={new Date(this.props.review.periodEnd)} id="endDate" onChange={(value) => this.handleEndDateChange(value)} />
+                        }
+                        {this.state.answersEditable && validationErrors.endDate &&
+                          <span style={{ color: 'red', fontWeight: 'bold'}}>&apos;To&apos; date is required</span>
+                        }
+                        {!this.state.answersEditable && 
+                          <span>{moment(new Date(this.state.periodEnd)).format('M/DD/YYYY')}</span>
+                        }
                       </div>
-                    }
-                    {this.state.role === 'Supervisor' && this.props.review.status === 'Ready' &&
-                      <div className="alert alert-info">
-                        You must wait for your employee to respond before further actions can be taken.
-                      </div>
-                    }            
-                    {this.state.role === 'Employee' && this.props.review.status === 'Ready' &&
-                      <div>
-                        <p><i>By acknowledging, you affirm that you have read your supervisor's feedback and discussed it with your supervisor.</i></p>
-                        <RadioGroup
-                          name="workflow"
-                          selectedValue={this.state.actionRadio}
-                          onChange={(val) => (this.setState({actionRadio: val}))}
-                          >
-                            <label>
-                              <Radio value="saveonly" />Save only
-                            </label>
-                            <label>
-                              <Radio value="acknowledge" />Acknowledge
-                            </label>
-                            <label>
-                              <Radio value="return" />Further discussion requested
-                            </label>                          
-                        </RadioGroup>
-                        <input type="button" className="btn btn-primary" value="Save" onClick={this.handleSubmit}/>
-                      </div>
-                    }
-                    {this.state.role === 'Employee' && this.props.review.status === 'Open' &&
-                      <div className="alert alert-info">
-                        Your supervisor has not yet released their feedback for your response.
-                      </div>
-                    }                        
+                    </div>
                   </fieldset>
                 </div>
-              }
+                <div className="form-group">
+                  {this.props.review.questions.map((question, index) => (
+                    <div key={['question', index].join('_')}>
+                      <Question question={question} editable={this.state.answersEditable} onChange={question.type === 'Text' ? ((value) => (console.log(value.level.content))) : ((value) => (console.log(value)))}/>
+                      {getResponse(question.id, this.props.review.responses) !== null &&
+                        <Response response={getResponse(question.id, this.props.review.responses)} editable={this.state.responsesEditable} onChange={(value) => (console.log(value.level.content))} />
+                      }
+                    </div>
+                  ))}
+                </div>
+                <div className="form-group">
+                  <Response response={getMainReviewResponse(this.props.review.responses)} standalone editable={this.state.responsesEditable} onChange={(value) => (console.log(value.level.content))} />
+                </div>
+                {this.props.review.status !== 'Closed' &&
+                  <div className="form-group">
+                    <fieldset className="reviewQuestionFieldset">
+                      <legend>Action</legend>
+                      {this.state.role === 'Supervisor' && this.props.review.status === 'Open' &&
+                        <div>
+                          <p><i>Please discuss your feedback with your employee before submittion for their acknowledgement.</i></p>
+                          <RadioGroup
+                            name="workflow"
+                            selectedValue={this.state.actionRadio}
+                            onChange={(val) => (this.setState({actionRadio: val}))}
+                            >
+                              <label>
+                                <Radio value="saveonly" />Save only
+                              </label>
+                              <label>
+                                <Radio value="sendack" />Submit for employee acknowledgement
+                              </label>
+                          </RadioGroup>
+                          <input type="button" className="btn btn-primary" value="Save" onClick={this.handleSubmit}/>
+                        </div>
+                      }
+                      {this.state.role === 'Supervisor' && this.props.review.status === 'Acknowledged' &&
+                        <div>
+                          <RadioGroup
+                            name="workflow"
+                            selectedValue={this.state.actionRadio}
+                            onChange={(val) => (this.setState({actionRadio: val}))}
+                            >
+                              <label>
+                                <Radio value="reopen" />Re-open
+                              </label>                          
+                              <label>
+                                <Radio value="close" />Submit to HR record
+                              </label>
+                          </RadioGroup>
+                          <input type="button" className="btn btn-primary" value="Save" onClick={this.handleSubmit}/>
+                        </div>
+                      }
+                      {this.state.role === 'Supervisor' && this.props.review.status === 'Ready' &&
+                        <div className="alert alert-info">
+                          You must wait for your employee to respond before further actions can be taken.
+                        </div>
+                      }            
+                      {this.state.role === 'Employee' && this.props.review.status === 'Ready' &&
+                        <div>
+                          <p><i>By acknowledging, you affirm that you have read your supervisor's feedback and discussed it with your supervisor.</i></p>
+                          <RadioGroup
+                            name="workflow"
+                            selectedValue={this.state.actionRadio}
+                            onChange={(val) => (this.setState({actionRadio: val}))}
+                            >
+                              <label>
+                                <Radio value="saveonly" />Save only
+                              </label>
+                              <label>
+                                <Radio value="acknowledge" />Acknowledge
+                              </label>
+                              <label>
+                                <Radio value="return" />Further discussion requested
+                              </label>                          
+                          </RadioGroup>
+                          <input type="button" className="btn btn-primary" value="Save" onClick={this.handleSubmit}/>
+                        </div>
+                      }
+                      {this.state.role === 'Employee' && this.props.review.status === 'Open' &&
+                        <div className="alert alert-info">
+                          Your supervisor has not yet released their feedback for your response.
+                        </div>
+                      }                        
+                    </fieldset>
+                  </div>
+                }
+              </div>
             </div>
+          </form>
+        }
+        {this.state.role === 'Supervisor' &&
+          <div>
+            <Link style={{ fontSize: '20px' }} to={{ pathname: '/conversations', query: { emp: this.props.review.employee_id }}}>Back to {this.props.review.employee_name}&apos;s conversations<br /></Link>        
+            <Link style={{ fontSize: '20px' }} to={{ pathname: '/', query: { mode: 'employees' }}}>Back to all my employee conversations</Link>
           </div>
-        </form>
+        }
+        {this.state.role === 'Employee' &&
+          <Link style={{ fontSize: '20px' }} to={{ pathname: '/' }}>Back to my conversations</Link>
+        }
       </div>
     );
   }

@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router';
+import { Link, browserHistory } from 'react-router';
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
 import { Radio, RadioGroup } from 'react-radio-group';
 import moment from 'moment';
 import DatePickerWrapper from '../shared/DatePickerWrapper';
@@ -27,10 +29,33 @@ const getMainReviewResponse = (responses) => {
   return null;
 }
 
-const validate = (startDate, endDate) => {
+const validate = (state, onSubmit) => {
+  const invalidQuestions = [];
+  const invalidResponses = [];
+
+  if (onSubmit) {
+    if (state.answersEditable) {
+      for (let question of state.questions) {
+        if (question.answer === '' && question.required) {
+          invalidQuestions.push(question.id);
+        }
+      }
+    }
+
+    if (state.responsesEditable) {
+      for (let response of state.responses) {
+        if (response.Response === '') {
+          invalidResponses.push(response.question_id);
+        }
+      }
+    }
+  }
+
   return {
-    startDate: startDate == null,
-    endDate: endDate == null,
+    startDate: state.periodStart == null,
+    endDate: state.periodEnd == null,
+    questions: onSubmit ? invalidQuestions : state.questions,
+    responses: onSubmit ? invalidResponses : state.responses,
   };
 }
 
@@ -38,6 +63,7 @@ class Review extends React.Component {
   constructor(props) {
     super(props);
     //figure out if the answers are editable, etc
+    const initialErrors = validate( { periodStart: this.props.review.periodStart, periodEnd: this.props.review.periodEnd, questions: [], responses: []});
     let role = this.props.review.employee_id === this.props.userId ? 'Employee' : 'Supervisor';
     this.state = {
       periodStart: this.props.review.periodStart,
@@ -47,18 +73,37 @@ class Review extends React.Component {
       role: this.props.review.employee_id === this.props.userId ? 'Employee' : 'Supervisor',
       answersEditable: this.props.review.status === 'Open' && role === 'Supervisor' ? true : false,
       responsesEditable: this.props.review.status === 'Ready' && role === 'Employee' ? true : false,
-      actionRadio: 'saveonly', //todo set appropriate action value based on other vars
+      actionRadio: 'saveonly', //todo set appropriate action value based on other vars,
+      validationErrors: initialErrors,
+      formError: initialErrors.startDate || initialErrors.endDate || initialErrors.questions.length > 0 || initialErrors.responses.length > 0,
     }
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleStartDateChange = this.handleStartDateChange.bind(this);
+    this.handleEndDateChange = this.handleEndDateChange.bind(this);
+    this.handleTextEditorChange = this.handleTextEditorChange.bind(this);
   }
 
   handleSubmit(event) {
-    if (this.hasErrors()) {
-      event.preventDefault();
-      console.log('errors on form!');
+    if (this.state.actionRadio !== 'saveonly' && this.hasErrors()) {
       return;
     }
-    console.log('you are submitting');
+    const newStatus = this.state.actionRadio === 'saveonly' ? this.props.review.status : this.state.actionRadio;
+    this.props.submit({
+      id: this.props.review.id,
+      reviewInput: {
+        status: newStatus,
+        periodStart: this.state.periodStart,
+        periodEnd: this.state.periodEnd,
+        questions: this.state.questions.map(question => ({
+          answer: question.answer,
+          id: question.id,
+        })),
+        responses: this.state.responses.map(response => ({
+          question_id: response.question_id,
+          Response: response.Response,
+        })),
+      }
+    })
   }
 
   handleStartDateChange(value) {
@@ -69,14 +114,49 @@ class Review extends React.Component {
     this.setState({ periodEnd: value != null ? value.format('M/DD/YYYY') : value });
   }
 
+  handleTextEditorChange(event) {
+    const splitId = event.target.id.split('-'); 
+    const questionOrResponse = splitId[0];
+    const id = splitId[1] === '' ? null : splitId[1];
+    if (questionOrResponse === 'response') {
+      const newResponses = [];
+      for (let i = 0; i < this.state.responses.length; i += 1) {
+        if (id == this.state.responses[i].question_id) {
+          newResponses.push(Object.assign({}, this.state.responses[i], {Response: event.target.getContent()}));
+          break;
+        } else {
+          newResponses.push(Object.assign({}, this.state.responses[i]));
+        }
+      }
+      this.setState({responses: newResponses});
+    } else {
+      const newQuestions = [];
+      for (let i = 0; i < this.state.questions.length; i += 1) {
+        if (id == this.state.questions[i].id) {
+          newQuestions.push(Object.assign({}, this.state.questions[i], {answer: event.target.getContent()}));
+          break;
+        } else {
+          newQuestions.push(Object.assign({}, this.state.questions[i]));
+        }
+      }
+      this.setState({questions: newQuestions});
+    }
+  }
+
+  handleRadioQuestionChange(event) {
+    console.log('DO THIS!');
+  }
+
   hasErrors() {
-    const validationErrors = validate(this.state.periodStart, this.state.periodEnd);
-    const invalid = Object.keys(validationErrors).some(x => validationErrors[x]);
+    const validationErrors = validate(this.state, true);
+    this.setState({validationErrors: validationErrors})
+    const invalid = validationErrors.startDate || validationErrors.endDate || validationErrors.questions.length > 0 || validationErrors.responses.length > 0;
+    this.setState({formError: invalid});
     return invalid;
   }
-  
+
   render() {
-    const validationErrors = validate(this.state.periodStart, this.state.periodEnd);
+    const dateErrors = validate(this.state);
 
     return (
       <div>
@@ -94,11 +174,11 @@ class Review extends React.Component {
                     <legend>Period</legend>
                     <div className="col-sm-6 col-xs-12" style={{ marginBottom: '10px' }}>
                       <label htmlFor="startDate" className="col-xs-2" style={{ textAlign: 'right'}}>From: </label>
-                      <div className={validationErrors.startDate ? "col-xs-4 invalid" : "col-xs-4"}>
+                      <div className={dateErrors.startDate ? "col-xs-4 invalid" : "col-xs-4"}>
                         {this.state.answersEditable &&
                           <DatePickerWrapper startDate={new Date(this.state.periodStart)} id="startDate" onChange={(value) => this.handleStartDateChange(value)} />
                         }
-                        {this.state.answersEditable && validationErrors.startDate &&
+                        {this.state.answersEditable && dateErrors.startDate &&
                           <span style={{ color: 'red', fontWeight: 'bold'}}>&apos;From&apos; date is required</span>
                         }                        
                         {!this.state.answersEditable && 
@@ -106,13 +186,13 @@ class Review extends React.Component {
                         }
                       </div>
                     </div>
-                    <div className={validationErrors.endDate ? "col-sm-6 col-xs-12 invalid" : "col-sm-6 col-xs-12"}>
+                    <div className={dateErrors.endDate ? "col-sm-6 col-xs-12 invalid" : "col-sm-6 col-xs-12"}>
                       <label htmlFor="endDate" className="col-xs-2" style={{ textAlign: 'right'}}>To: </label>
                       <div className="col-xs-4">
                         {this.state.answersEditable &&
                           <DatePickerWrapper endDate={new Date(this.props.review.periodEnd)} id="endDate" onChange={(value) => this.handleEndDateChange(value)} />
                         }
-                        {this.state.answersEditable && validationErrors.endDate &&
+                        {this.state.answersEditable && dateErrors.endDate &&
                           <span style={{ color: 'red', fontWeight: 'bold'}}>&apos;To&apos; date is required</span>
                         }
                         {!this.state.answersEditable && 
@@ -125,15 +205,15 @@ class Review extends React.Component {
                 <div className="form-group">
                   {this.props.review.questions.map((question, index) => (
                     <div key={['question', index].join('_')}>
-                      <Question question={question} editable={this.state.answersEditable} onChange={question.type === 'Text' ? ((value) => (console.log(value.level.content))) : ((value) => (console.log(value)))}/>
-                      {getResponse(question.id, this.props.review.responses) !== null &&
-                        <Response response={getResponse(question.id, this.props.review.responses)} editable={this.state.responsesEditable} onChange={(value) => (console.log(value.level.content))} />
+                      <Question question={question} requiredText={this.state.role === "Supervisor" ? "This question must be answered before submitting for employee acknowledgement" : ""} invalid={this.state.validationErrors.questions.includes(question.id)} editable={this.state.answersEditable} onBlur={question.type === 'Text' ? ((event) => (this.handleTextEditorChange(event))) : ((event) => (this.handleRadioQuestionChange(event)))}/>
+                      {getResponse(question.id, this.state.responses) !== null &&
+                        <Response response={getResponse(question.id, this.state.responses)} invalid={this.state.validationErrors.responses.includes(question.id)} requiredText="This response must be completed before acknowledgement or request for further discussion." required={this.state.responsesEditable} editable={this.state.responsesEditable} onChange={(event) => (this.handleTextEditorChange(event))} />
                       }
                     </div>
                   ))}
                 </div>
                 <div className="form-group">
-                  <Response response={getMainReviewResponse(this.props.review.responses)} standalone editable={this.state.responsesEditable} onChange={(value) => (console.log(value.level.content))} />
+                  <Response response={getMainReviewResponse(this.state.responses)} invalid={this.state.validationErrors.responses.includes(null)} requiredText="This response must be completed before acknowledgement or request for further discussion." required={this.state.responsesEditable} standalone editable={this.state.responsesEditable} onChange={(event) => (this.handleTextEditorChange(event))} />
                 </div>
                 {this.props.review.status !== 'Closed' &&
                   <div className="form-group">
@@ -141,7 +221,7 @@ class Review extends React.Component {
                       <legend>Action</legend>
                       {this.state.role === 'Supervisor' && this.props.review.status === 'Open' &&
                         <div>
-                          <p><i>Please discuss your feedback with your employee before submittion for their acknowledgement.</i></p>
+                          <p><i>Please discuss your feedback with your employee before submission for their acknowledgement.</i></p>
                           <RadioGroup
                             name="workflow"
                             selectedValue={this.state.actionRadio}
@@ -151,10 +231,11 @@ class Review extends React.Component {
                                 <Radio value="saveonly" />Save only
                               </label>
                               <label>
-                                <Radio value="sendack" />Submit for employee acknowledgement
+                                <Radio value="Ready" />Submit for employee acknowledgement
                               </label>
                           </RadioGroup>
                           <input type="button" className="btn btn-primary" value="Save" onClick={this.handleSubmit}/>
+                          <span hidden={!this.state.formError} style={{ color: 'red', marginLeft: '5px'}}>Required fields are missing. You must complete all required fields before you can submit this conversation for employee acknowledgement.</span>
                         </div>
                       }
                       {this.state.role === 'Supervisor' && this.props.review.status === 'Acknowledged' &&
@@ -165,10 +246,10 @@ class Review extends React.Component {
                             onChange={(val) => (this.setState({actionRadio: val}))}
                             >
                               <label>
-                                <Radio value="reopen" />Re-open
+                                <Radio value="Open" />Re-open
                               </label>                          
                               <label>
-                                <Radio value="close" />Submit to HR record
+                                <Radio value="Closed" />Submit to HR record
                               </label>
                           </RadioGroup>
                           <input type="button" className="btn btn-primary" value="Save" onClick={this.handleSubmit}/>
@@ -191,13 +272,14 @@ class Review extends React.Component {
                                 <Radio value="saveonly" />Save only
                               </label>
                               <label>
-                                <Radio value="acknowledge" />Acknowledge
+                                <Radio value="Acknowledged" />Acknowledge
                               </label>
                               <label>
-                                <Radio value="return" />Further discussion requested
+                                <Radio value="Open" />Further discussion requested
                               </label>                          
                           </RadioGroup>
                           <input type="button" className="btn btn-primary" value="Save" onClick={this.handleSubmit}/>
+                          <span hidden={!this.state.formError} style={{ color: 'red', marginLeft: '5px'}}>Required fields are missing. You must complete all required fields before you can submit your response to your supervisor.</span>
                         </div>
                       }
                       {this.state.role === 'Employee' && this.props.review.status === 'Open' &&
@@ -259,12 +341,40 @@ Review.propTypes = {
   review: PropTypes.shape(reviewShape), // eslint-disable-line
 };
 
-export default Review;
+const submitReview = gql`
+  mutation updateReview($id: Int, $reviewInput: ReviewInput!) {
+    updateReview (id: $id, review: $reviewInput) {
+      id
+      status
+      status_date
+      supervisor_id
+      employee_id
+      position
+      periodStart
+      periodEnd
+      reviewer_name
+      employee_name
+      questions {
+        id
+        type
+        question
+        answer
+        required
+      }
+      responses {
+        question_id
+        Response
+      }
+    }
+  }
+`;
 
-// const mapStateToProps = state => (
-//   {
-//     userId: state.employee.employeeId,
-//   }
-// );
-
-// export default connect(mapStateToProps)(Review);
+export default graphql(submitReview, {
+  props: ({ mutate }) => ({
+    submit: (reviewData) => mutate({ variables: { id: reviewData.id, reviewInput: reviewData.reviewInput }}).then(({ data }) => {
+        browserHistory.push(['/conversations?emp', data.updateReview.employee_id].join('='));
+      }).catch((error) => {
+        console.log('there was an error sending the query', error);
+      }),
+  })
+})(Review);

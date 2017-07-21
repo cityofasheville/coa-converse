@@ -50,6 +50,7 @@ const getReviewQuery = gql`
     }
   }
 `;
+
 const ReviewContainerGQL = graphql(getReviewQuery, {
   options: (ownProps)=> ({
     variables: {

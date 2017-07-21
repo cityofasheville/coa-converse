@@ -19,9 +19,9 @@ class RichTextEditor extends React.Component {
         toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | indent outdent | code',
         branding: false,
         readonly: !this.props.editable,
-        content_style: !this.props.editable ? "body { background-color: rgb(248, 248, 248) !important; }* { cursor: not-allowed }" : "body { background: #fff }",
+        content_style: !this.props.editable ? "body { background-color: rgb(248, 248, 248) !important; }* { cursor: not-allowed }" : (this.props.invalid ? ".mce-content-body { background-color: #ffe2e2 !important }": "body { background: #fff }"),
       }}
-      onChange={this.props.onChange}
+      onBlur={this.props.onChange}
     />
   }
 }
@@ -35,6 +35,7 @@ RichTextEditor.propTypes = {
 
 RichTextEditor.defaultProps = {
   editable: true,
+  invalid: false,
 };
 
 export default RichTextEditor;

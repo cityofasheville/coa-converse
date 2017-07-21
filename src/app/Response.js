@@ -28,8 +28,14 @@ class Response extends React.Component {
             id={['response', this.props.response.question_id].join('-')}
             content={this.props.response.Response}
             editable={this.props.editable}
+            invalid={this.props.invalid}
             onChange={this.props.onChange}
           />
+          {this.props.required && this.props.requiredText.length !== 0 &&
+            <div style={{ fontStyle: 'italic', marginTop: '5px' }}>
+              <span style={this.props.invalid ? {color: 'red'} : {}}>{this.props.requiredText}</span>
+            </div>
+          }
         </fieldset>
       );
     } else {
@@ -40,8 +46,14 @@ class Response extends React.Component {
             id={['response', this.props.response.question_id].join('-')}
             content={this.props.response.Response}
             editable={this.props.editable}
+            invalid={this.props.invalid}
             onChange={this.props.onChange}
           />
+          {this.props.required && this.props.requiredText.length !== 0 &&
+            <div style={{ fontStyle: 'italic', marginTop: '5px' }}>
+              <span style={this.props.invalid ? {color: 'red'} : {}}>{this.props.requiredText}</span>
+            </div>
+          }
         </div>
       );
     }
@@ -57,12 +69,18 @@ const responseShape = {
 Response.propTypes = {
   response: PropTypes.shape(responseShape),
   editable: PropTypes.bool,
+  required: PropTypes.bool,
+  requiredText: PropTypes.string,
   onChange: PropTypes.func,
+  invalid: PropTypes.bool,
 };
 
 Response.defaultProps = {
   editable: false,
+  required: true,
+  requiredText: "",
   standalone: false,
+  invalid: false,
 };
 
 export default Response;

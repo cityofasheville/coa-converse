@@ -33,6 +33,7 @@ class Question extends React.Component {
             id={['qanswer', this.props.question.id].join('-')}
             content={this.props.question.answer}
             editable={this.props.editable}
+            invalid={this.props.invalid}
             onChange={this.props.onChange}
           />
         }
@@ -60,6 +61,11 @@ class Question extends React.Component {
             </span>
           </div>
         }
+        {this.props.question.required && this.props.requiredText.length !== 0 &&
+          <div style={{ fontStyle: 'italic', marginTop: '5px' }}>
+            <span style={this.props.invalid ? {color: 'red'} : {}}>{this.props.requiredText}</span>
+          </div>
+        }
       </fieldset>
     );
   }
@@ -74,13 +80,18 @@ const questionShape = {
 };
 
 Question.propTypes = {
+  invalid: PropTypes.bool,
   question: PropTypes.shape(questionShape),
   editable: PropTypes.bool,
+  requiredText: PropTypes.string,
   onChange: PropTypes.func,
 };
 
 Question.defaultProps = {
   editable: true,
+  required: true,
+  requiredText: "",
+  invalid: false,
 };
 
 export default Question;

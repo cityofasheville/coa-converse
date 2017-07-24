@@ -36,7 +36,7 @@ const validate = (state, onSubmit) => {
   if (onSubmit) {
     if (state.answersEditable) {
       for (let question of state.questions) {
-        if (question.answer === '' && question.required) {
+        if (!question.answer || question.answer === '') { // && question.required) {
           invalidQuestions.push(question.id);
         }
       }
@@ -44,7 +44,7 @@ const validate = (state, onSubmit) => {
 
     if (state.responsesEditable) {
       for (let response of state.responses) {
-        if (response.Response === '') {
+        if (!response.Response || response.Response === '') {
           invalidResponses.push(response.question_id);
         }
       }
@@ -62,7 +62,6 @@ const validate = (state, onSubmit) => {
 class Review extends React.Component {
   constructor(props) {
     super(props);
-    //figure out if the answers are editable, etc
     const initialErrors = validate( { periodStart: this.props.review.periodStart, periodEnd: this.props.review.periodEnd, questions: [], responses: []});
     let role = this.props.review.employee_id === this.props.userId ? 'Employee' : 'Supervisor';
     this.state = {
@@ -123,7 +122,6 @@ class Review extends React.Component {
       for (let i = 0; i < this.state.responses.length; i += 1) {
         if (id == this.state.responses[i].question_id) {
           newResponses.push(Object.assign({}, this.state.responses[i], {Response: event.target.getContent()}));
-          break;
         } else {
           newResponses.push(Object.assign({}, this.state.responses[i]));
         }
@@ -134,7 +132,6 @@ class Review extends React.Component {
       for (let i = 0; i < this.state.questions.length; i += 1) {
         if (id == this.state.questions[i].id) {
           newQuestions.push(Object.assign({}, this.state.questions[i], {answer: event.target.getContent()}));
-          break;
         } else {
           newQuestions.push(Object.assign({}, this.state.questions[i]));
         }
@@ -143,8 +140,16 @@ class Review extends React.Component {
     }
   }
 
-  handleRadioQuestionChange(event) {
-    console.log('DO THIS!');
+  handleRadioQuestionChange(value, questionId) {
+    const newQuestions = [];
+    for (let i = 0; i < this.state.questions.length; i += 1) {
+      if (questionId == this.state.questions[i].id) {
+        newQuestions.push(Object.assign({}, this.state.questions[i], {answer: value}));
+      } else {
+        newQuestions.push(Object.assign({}, this.state.questions[i]));
+      }
+    }
+    this.setState({questions: newQuestions});
   }
 
   hasErrors() {
@@ -205,7 +210,7 @@ class Review extends React.Component {
                 <div className="form-group">
                   {this.props.review.questions.map((question, index) => (
                     <div key={['question', index].join('_')}>
-                      <Question question={question} requiredText={this.state.role === "Supervisor" ? "This question must be answered before submitting for employee acknowledgement" : ""} invalid={this.state.validationErrors.questions.includes(question.id)} editable={this.state.answersEditable} onBlur={question.type === 'Text' ? ((event) => (this.handleTextEditorChange(event))) : ((event) => (this.handleRadioQuestionChange(event)))}/>
+                      <Question question={question} required={true} requiredText={this.state.role === "Supervisor" ? "This question must be answered before submitting for employee acknowledgement" : ""} invalid={this.state.validationErrors.questions.includes(question.id)} editable={this.state.answersEditable} onBlur={question.type === 'Text' ? ((event) => (this.handleTextEditorChange(event))) : ((value) => (this.handleRadioQuestionChange(value, question.id)))}/>
                       {getResponse(question.id, this.state.responses) !== null &&
                         <Response response={getResponse(question.id, this.state.responses)} invalid={this.state.validationErrors.responses.includes(question.id)} requiredText="This response must be completed before acknowledgement or request for further discussion." required={this.state.responsesEditable} editable={this.state.responsesEditable} onChange={(event) => (this.handleTextEditorChange(event))} />
                       }
@@ -286,7 +291,12 @@ class Review extends React.Component {
                         <div className="alert alert-info">
                           Your supervisor has not yet released their feedback for your response.
                         </div>
-                      }                        
+                      }     
+                      {this.state.role === 'Employee' && this.props.review.status === 'Acknowledged' &&
+                        <div className="alert alert-info">
+                          You have acknowledged this conversation. When your supervisor closes the conversation, it will appear in your HR record.
+                        </div>
+                      }                                           
                     </fieldset>
                   </div>
                 }

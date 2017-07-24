@@ -19,8 +19,8 @@ class Question extends React.Component {
     this.setState({
       answer: newAnswer,
     });
-    if (this.props.onChange !== undefined) {
-      this.props.onChange(newAnswer);
+    if (this.props.onBlur !== undefined) {
+      this.props.onBlur(newAnswer);
     }
   }
 
@@ -34,11 +34,11 @@ class Question extends React.Component {
             content={this.props.question.answer}
             editable={this.props.editable}
             invalid={this.props.invalid}
-            onChange={this.props.onChange}
+            onChange={this.props.onBlur}
           />
         }
         {this.props.question.type === 'Y/N' &&
-          <div>
+          <div style={this.props.invalid ? { backgroundColor: '#ffe2e2'} : {}}>
             <div style={{ display: 'inline-block' }}>
   `           <RadioGroup
                 name={['ynanswer', this.props.question.id].join('-')}
@@ -47,10 +47,10 @@ class Question extends React.Component {
                 disabled={!this.props.editable}
                 >
                   <label>
-                    <Radio value="Y" disabled={!this.props.editable} />Yes
+                    <Radio value="1" disabled={!this.props.editable} />Yes
                   </label>
                   <label>
-                    <Radio value="N" disabled={!this.props.editable} />No
+                    <Radio value="0" disabled={!this.props.editable} />No
                   </label>
               </RadioGroup>
             </div>
@@ -61,7 +61,7 @@ class Question extends React.Component {
             </span>
           </div>
         }
-        {this.props.question.required && this.props.requiredText.length !== 0 &&
+        {this.props.required && this.props.requiredText.length !== 0 &&
           <div style={{ fontStyle: 'italic', marginTop: '5px' }}>
             <span style={this.props.invalid ? {color: 'red'} : {}}>{this.props.requiredText}</span>
           </div>

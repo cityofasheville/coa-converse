@@ -54,7 +54,7 @@ const getReviewQuery = gql`
 const ReviewContainerGQL = graphql(getReviewQuery, {
   options: (ownProps)=> ({
     variables: {
-      id: ownProps.location.query.rev,
+      id: ownProps.location.query.rev || -1,
       employee_id: ownProps.location.query.emp,
     }
   })

@@ -69,7 +69,7 @@ class Review extends React.Component {
       periodEnd: this.props.review.periodEnd,
       questions: this.props.review.questions,
       responses: this.props.review.responses,
-      role: this.props.review.employee_id === this.props.userId ? 'Employee' : 'Supervisor',
+      role: this.props.review.employee_id === this.props.userId ? 'Employee' : (this.props.userId === this.props.review.supervisor_id ? 'Supervisor' : 'Viewer'),
       answersEditable: this.props.review.status === 'Open' && role === 'Supervisor' ? true : false,
       responsesEditable: this.props.review.status === 'Ready' && role === 'Employee' ? true : false,
       actionRadio: 'saveonly', //todo set appropriate action value based on other vars,

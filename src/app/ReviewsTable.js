@@ -3,6 +3,9 @@ import PropTypes from 'prop-types';
 import ReactTable from 'react-table';
 import moment from 'moment';
 import { Link } from 'react-router';
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
+import LoadingAnimation from '../shared/LoadingAnimation';
 
 const dataColumnsCurrent = [
   {
@@ -53,7 +56,15 @@ const dataColumns = [
 ];
 
 const ReviewsTable = props => {
+  if (props.data.loading) { // eslint-disable-line react/prop-types
+    return <LoadingAnimation />;
+  }
+  if (props.data.error) { // eslint-disable-line react/prop-types
+    return <p>{props.data.error.message}</p>; // eslint-disable-line react/prop-types
+  }
+
   const reviews = props.reviews === null ? [] : props.reviews;
+  const loggedInEmpId = props.data.employee.id;
   return (
     <div className="row">
       <div className="col-sm-12">
@@ -61,6 +72,9 @@ const ReviewsTable = props => {
         {reviews.length === 0 &&
           <div className="alert alert-warning">
             <span className="alert-text">{props.current ? 'No current conversation found' : 'No past conversations found'}</span>
+            {props.current && (props.supervisorId === loggedInEmpId) &&
+              <Link to={{ pathname: 'conversation', query: { emp: props.emp } }}><div className="btn btn-primary btn-sm" style={{ marginLeft: '10px' }}>Begin a conversation</div></Link>
+            }
           </div>
         }
         {props.reviews.length > 0 &&
@@ -116,4 +130,13 @@ ReviewsTable.defaultProps = {
   current: false,
 };
 
-export default ReviewsTable;
+const getLoggedInEmpIdQuery = gql`
+  query getLoggedInEmpIdQuery {
+    employee {
+      id
+      name
+    }
+  }
+`;
+
+export default graphql(getLoggedInEmpIdQuery, {})(ReviewsTable);

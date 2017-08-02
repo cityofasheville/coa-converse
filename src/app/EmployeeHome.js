@@ -20,15 +20,25 @@ const EmployeeHome = (props) => {
   }
 
   const refreshLocation = (value) => {
-    browserHistory.push([props.location.pathname, '?mode=', value].join(''));
+    let paramsString = ['?mode=', value].join('');
+    if (props.location.query.emp) {
+      paramsString = [paramsString, '&emp=', props.location.query.emp].join('');
+    }
+    browserHistory.push([props.location.pathname, paramsString].join(''));
   };
 
   const displayContents = () => {
     if (isSupervisor()) {
-      if (props.location.query.mode == 'conversations') {
+      if (props.location.query.mode) {
+        if (props.location.query.mode === 'employees') {
+          return <Employees {...props} userId={props.data.employee.id} />
+        }
         return <Reviews {...props} />
       }
-      return <Employees {...props} />
+      if (props.location.query.emp) {
+        return <Reviews {...props} />
+      }
+      return <Employees {...props} userId={props.data.employee.id} />
     }
     return <Reviews {...props} />
   }
@@ -37,12 +47,12 @@ const EmployeeHome = (props) => {
     <div className="row">
       <div className="col-sm-12">
         {isSupervisor(props.user) && 
-          <RadioGroup name="modeRadio" selectedValue={props.location.query.mode || 'employees'} onChange={refreshLocation}>
+          <RadioGroup name="modeRadio" selectedValue={props.location.query.mode || (props.location.query.emp ? 'conversations' : 'employees')} onChange={refreshLocation}>
             <label>
-              <Radio value="employees" />My employees
+              <Radio value="employees" />{props.location.query.emp ? [props.data.employee.name, '\'s'].join('') : 'My'} employees
             </label>
             <label>
-              <Radio value="conversations" />My conversations
+              <Radio value="conversations" />{props.location.query.emp ?  [props.data.employee.name, '\'s'].join('') : 'My'} conversations
             </label>
           </RadioGroup>
         }
@@ -53,9 +63,10 @@ const EmployeeHome = (props) => {
 };
 
 const getEmployeeQuery = gql`
-  query getEmployeeQuery {
-    employee {
+  query getEmployeeQuery($id: Int) {
+    employee (id: $id) {
       id
+      name
       employees {
         id
       }
@@ -63,4 +74,10 @@ const getEmployeeQuery = gql`
   }
 `;
 
-export default graphql(getEmployeeQuery, {})(EmployeeHome);
+export default graphql(getEmployeeQuery, {
+  options: (ownProps) => ({
+    variables: {
+      id: ownProps.location.query.emp,
+    }
+  })
+})(EmployeeHome);

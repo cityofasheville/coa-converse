@@ -44,7 +44,7 @@ const getEmployeesQuery = gql`
 const EmployeesGQL = graphql(getEmployeesQuery, {
   options: (ownProps)=> ({
     variables: {
-      id: ownProps.userId //for testing
+      id: ownProps.userId
     }
   })
 })(Employees);

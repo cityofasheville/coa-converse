@@ -220,7 +220,7 @@ class Review extends React.Component {
                 <div className="form-group">
                   <Response response={getMainReviewResponse(this.state.responses)} invalid={this.state.validationErrors.responses.includes(null)} requiredText="This response must be completed before acknowledgement or request for further discussion." required={this.state.responsesEditable} standalone editable={this.state.responsesEditable} onChange={(event) => (this.handleTextEditorChange(event))} />
                 </div>
-                {this.props.review.status !== 'Closed' &&
+                {this.props.review.status !== 'Closed' && this.state.role !== 'Viewer' &&
                   <div className="form-group">
                     <fieldset className="reviewQuestionFieldset">
                       <legend>Action</legend>

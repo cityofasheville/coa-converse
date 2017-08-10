@@ -6,26 +6,61 @@ import { Link } from 'react-router';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import LoadingAnimation from '../shared/LoadingAnimation';
+import Icon from '../shared/Icon';
+import { IM_WARNING2, IM_HOURGLASS } from '../shared/iconConstants';
+
+const getTimeSinceLastConversation = (reviewDate, reviewable) => {
+  if (!reviewable) {
+    return <span>--</span>;
+  }
+  const lastReviewedDate = reviewDate ? moment.utc(reviewDate).format('M/DD/YYYY') : null;
+  if (!lastReviewedDate) {
+    return <span style={{ color: 'orange' }}>Never</span>;
+  }
+  const today = moment.utc(new Date(), 'M/DD/YYYY');
+  const daysSinceLastReview = today.diff(moment.utc(lastReviewedDate, 'M/DD/YYYY'), 'days');
+  if (daysSinceLastReview >= 90) {
+    return <span style={{ color: 'red' }}>{daysSinceLastReview} days <Icon path={IM_WARNING2} size={18} /></span>
+  }
+  if (daysSinceLastReview > 83) {
+    return <span style={{ color: 'orange'}}>{daysSinceLastReview} days <Icon path={IM_HOURGLASS} size={18} /></span>
+  }
+  return <span>{daysSinceLastReview} days </span>
+};
 
 const dataColumnsCurrent = [
   {
-    Header: 'Period',
-    id: 'period',
-    accessor: (review) => (<span>{moment(review.periodStart).format('M/DD/YYYY')} - {moment(review.periodEnd).format('M/DD/YYYY')}</span>),
-    minWidth: 200,
+    Header: (<div>Conversation Date</div>),
+    id: 'periodEnd',
+    accessor: (review) => (<span title="View conversation">{moment.utc(review.periodEnd).format('M/DD/YYYY')}</span>),
+    minWidth: 160,
     Cell: (row) => (
       <Link to={{ pathname: 'conversation', query: { emp: row.original.employee_id, rev: row.original.id } }}>{row.value}</Link>
     ),
   },
   {
     Header: 'Status',
-    accessor: 'status',
+    id: 'status',
+    accessor: (review) => {
+      switch (review.status) {
+        case 'Open':
+          return <span>Waiting for supervisor comments</span>
+        case 'Ready':
+          return <span>Waiting for employee acknowledgement</span>
+        case 'Acknowledged':
+          return <span>Waiting for supervisor to finalize</span>
+        case 'Closed':
+          return <span>Completed</span>
+        default:
+          return <span></span>
+      }
+    },
     minWidth: 300,
   },
   {
     Header: 'Last Change',
     id: 'status_date',
-    accessor: (review) => (<span>{moment(review.status_date).format('M/DD/YYYY')}</span>),
+    accessor: (review) => (<span>{moment.utc(review.status_date).format('M/DD/YYYY')}</span>),
     maxWidth: 200,
     minWidth: 130,
   },
@@ -33,20 +68,13 @@ const dataColumnsCurrent = [
 
 const dataColumns = [
   {
-    Header: 'Period',
-    id: 'period',
-    accessor: (review) => (<span>{moment(review.periodStart).format('M/DD/YYYY')} - {moment(review.periodEnd).format('M/DD/YYYY')}</span>),
+    Header: (<div>Conversation Date</div>),
+    id: 'periodEnd',
+    accessor: (review) => (<span title="View conversation">{moment.utc(review.periodEnd).format('M/DD/YYYY')}</span>),
     minWidth: 200,
     Cell: (row) => (
       <Link to={{ pathname: 'conversation', query: { emp: row.original.employee_id, rev: row.original.id } }}>{row.value}</Link>
     ),
-  },
-  {
-    Header: 'Date Completed',
-    id: 'date_completed',
-    accessor: (review) => (<span>{moment(review.status_date).format('M/DD/YYYY')}</span>),
-    maxWidth: 200,
-    minWidth: 130,
   },
   {
     Header: 'Supervisor',
@@ -68,7 +96,12 @@ const ReviewsTable = props => {
   return (
     <div className="row">
       <div className="col-sm-12">
-        <h2>{props.current ? 'Current Conversation' : 'Past Conversations'}</h2>
+        <h2>
+          {props.current ? 'Current Conversation' : 'Past Conversations'}
+          {props.current &&
+            <span style={{ fontSize: '16px', marginLeft: '15px', fontStyle: 'italic' }}>Time since last conversation: {getTimeSinceLastConversation(props.lastReviewed, props.reviewable)}</span>
+          }
+        </h2>
         {reviews.length === 0 &&
           <div className="alert alert-warning">
             <span className="alert-text">{props.current ? 'No current conversation found' : 'No past conversations found'}</span>

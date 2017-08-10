@@ -31,17 +31,17 @@ const PrintableReview = props => (
       <div className="col-sm-12">
         <div className="form-group">
           <fieldset className="reviewQuestionFieldset">
-            <legend>Period</legend>
-            <div className="col-sm-6 col-xs-12" style={{ marginBottom: '10px' }}>
-              <label htmlFor="startDate" className="col-xs-2" style={{ textAlign: 'right' }}>From: </label>
-              <div className="col-xs-4">
-                <span>{moment(new Date(props.review.periodStart)).format('M/DD/YYYY')} </span>
+            <legend>Conversation Details</legend>
+            <div className="col-sm-12" style={{ marginBottom: '10px' }}>
+              <label htmlFor="startDate" className="col-sm-4" style={{ textAlign: 'right' }}>Previous conversation completed: </label>
+              <div className="col-sm-8">
+                <span>{!props.review.periodStart ? '--' : moment.utc(props.review.periodStart).format('M/DD/YYYY')} </span>
               </div>
             </div>
-            <div className="col-sm-6 col-xs-12">
-              <label htmlFor="endDate" className="col-xs-2" style={{ textAlign: 'right' }}>To: </label>
-              <div className="col-xs-4">
-                 <span>{moment(new Date(props.review.periodEnd)).format('M/DD/YYYY')} </span>
+            <div className="col-sm-12">
+              <label htmlFor="endDate" className="col-sm-4" style={{ textAlign: 'right' }}>Date of this conversation: </label>
+              <div className="col-sm-8">
+                 <span>{moment.utc(props.review.periodEnd).format('M/DD/YYYY')} </span>
               </div>
             </div>
           </fieldset>

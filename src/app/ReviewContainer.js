@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { graphql } from 'react-apollo';
+import { graphql, compose } from 'react-apollo';
 import gql from 'graphql-tag';
 import { connect } from 'react-redux';
 import Review from './Review';
@@ -8,15 +8,15 @@ import PrintableReview from './Review';
 import LoadingAnimation from '../shared/LoadingAnimation';
 
 const ReviewContainer = props => {
-  if (props.data.loading) { // eslint-disable-line react/prop-types
+  if (props.reviewQuery.loading || props.lastReviewed.loading) { // eslint-disable-line react/prop-types
     return <LoadingAnimation />;
   }
-  if (props.data.error) { // eslint-disable-line react/prop-types
-    return <p>{props.data.error.message}</p>; // eslint-disable-line react/prop-types
+  if (props.reviewQuery.error || props.lastReviewed.error) { // eslint-disable-line react/prop-types
+    return <p>{props.reviewQuery.error ? props.reviewQuery.error.message : ''}{props.lastReviewed.error ? props.lastReviewed.error.message : ''}</p>; // eslint-disable-line react/prop-types
   }
 
   return (
-    <Review review={props.data.review} userId={props.data.employee.id} printable={props.location.query.printable === 'yes'} location={props.location} />
+    <Review review={props.reviewQuery.review} userId={props.reviewQuery.employee.id} printable={props.location.query.printable === 'yes'} lastReviewed={props.lastReviewed.employee.last_reviewed} location={props.location} />
   );
 }
 
@@ -51,13 +51,31 @@ const getReviewQuery = gql`
   }
 `;
 
-const ReviewContainerGQL = graphql(getReviewQuery, {
-  options: (ownProps)=> ({
-    variables: {
-      id: ownProps.location.query.rev || -1,
-      employee_id: ownProps.location.query.emp,
+const getLastReviewedQuery = gql`
+  query getLastReviewedQuery($id: Int) {
+    employee (id: $id) {
+      last_reviewed
     }
-  })
-})(ReviewContainer);
+  }
+`;
+
+const ReviewContainerGQL = compose(
+  graphql(getReviewQuery, {
+    name: 'reviewQuery',
+    options: (ownProps)=> ({
+      variables: {
+        id: ownProps.location.query.rev || -1,
+        employee_id: ownProps.location.query.emp,
+      }
+    })
+  }),
+  graphql(getLastReviewedQuery, { name: 'lastReviewed',
+    options: (ownProps) => ({
+      variables: {
+        id: ownProps.location.query.emp,
+      }
+     })
+  }),
+)(ReviewContainer);
 
 export default ReviewContainerGQL;

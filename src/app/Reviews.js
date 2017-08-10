@@ -42,7 +42,7 @@ const Reviews = props => {
           <span style={{ fontSize: '25px', marginTop: '10px' }} className="pull-right">Current Supervisor: {props.data.employee.supervisor_name || '--'}</span>
         </div>
       </div>
-      <ReviewsTable reviews={getCurrentReview(props.data.employee.reviews)} current supervisorId={props.data.employee.supervisor_id} emp={props.data.employee.id} />
+      <ReviewsTable reviews={getCurrentReview(props.data.employee.reviews)} current lastReviewed={props.data.employee.last_reviewed} reviewable={props.data.employee.reviewable} supervisorId={props.data.employee.supervisor_id} emp={props.data.employee.id} />
       <ReviewsTable reviews={getClosedReviews(props.data.employee.reviews)} />
     </div>
   );
@@ -103,6 +103,8 @@ const getReviewsQuery = gql`
       id
       supervisor_name
       supervisor_id
+      last_reviewed
+      reviewable
       reviews {
         id
         status

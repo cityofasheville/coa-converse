@@ -10,12 +10,12 @@ const getTimeSinceLastConversation = (employee) => {
   if (!employee.reviewable) {
     return <span>--</span>;
   }
-  const lastReviewedDate = moment(employee.last_reviewed).format('M/DD/YYYY');
-  if (lastReviewedDate === '12/31/1969') {
-    return <Link to={{ pathname: 'conversation', query: { emp: employee.id } }}><span style={{ color: 'red' }}>Never Reviewed <Icon path={IM_WARNING2} size={18} /></span></Link>;
+  const lastReviewedDate = employee.last_reviewed ? moment.utc(employee.last_reviewed).format('M/DD/YYYY') : null;
+  if (lastReviewedDate === null) {
+    return <Link to={{ pathname: 'conversation', query: { emp: employee.id } }}><span style={{ color: 'orange' }}>Never</span></Link>;
   }
-  const today = moment(new Date(), 'M/DD/YYYY');
-  const daysSinceLastReview = today.diff(moment(lastReviewedDate, 'M/DD/YYYY'), 'days');
+  const today = moment.utc(new Date(), 'M/DD/YYYY');
+  const daysSinceLastReview = today.diff(moment.utc(lastReviewedDate, 'M/DD/YYYY'), 'days');
   if (daysSinceLastReview >= 90) {
     return <Link to={{ pathname: 'conversation', query: { emp: employee.id } }}><span style={{ color: 'red' }}>{daysSinceLastReview} days <Icon path={IM_WARNING2} size={18} /></span></Link>
   }
@@ -49,7 +49,7 @@ const dataColumns = [
     maxWidth: 200,
     minWidth: 130,
     Cell: (row) => (
-      <span>{moment(row.original.last_reviewed).format('M/DD/YYYY') === '12/31/1969' ? '--' : moment(row.original.last_reviewed).format('M/DD/YYYY')}</span>
+      <span>{!row.original.last_reviewed ? '--' : moment.utc(row.original.last_reviewed).format('M/DD/YYYY')}</span>
     ),
   },
 ];
@@ -82,9 +82,5 @@ const EmployeesTable = props => {
 EmployeesTable.propTypes = {
   data: PropTypes.object, // eslint-disable-line
 };
-
-// EmployeesTable.defaultProps = {
-//   data: testEmployees,
-// }
 
 export default EmployeesTable;

@@ -5,19 +5,19 @@ import moment from 'moment';
 class DatePickerWrapper extends React.Component {
   constructor (props) {
     super(props);
-    let start = moment(new Date(), 'M/DD/YYYY');
-    if (props.startDate) {
-      start = moment(props.startDate, 'M/DD/YYYY');
+    let selected = moment(new Date(), 'M/DD/YYYY');
+    if (props.selected) {
+      selected = moment(props.selected, 'M/DD/YYYY');
     }
     this.state = {
-      startDate: moment(start)
+      selected: moment(selected)
     };
     this.handleChange = this.handleChange.bind(this);
   }
 
   handleChange(date) {
     this.setState({
-      startDate: date
+      selected: date
     });
     if (this.props.onChange !== undefined) {
       this.props.onChange(date);
@@ -26,7 +26,7 @@ class DatePickerWrapper extends React.Component {
 
   render() {
     return <DatePicker
-        selected={this.state.startDate}
+        selected={this.state.selected}
         onChange={this.handleChange}
         id={this.props.id}
         name={this.props.id}

@@ -52,7 +52,6 @@ const validate = (state, onSubmit) => {
   }
 
   return {
-    startDate: state.periodStart == null,
     endDate: state.periodEnd == null,
     questions: onSubmit ? invalidQuestions : state.questions,
     responses: onSubmit ? invalidResponses : state.responses,
@@ -62,10 +61,10 @@ const validate = (state, onSubmit) => {
 class Review extends React.Component {
   constructor(props) {
     super(props);
-    const initialErrors = validate( { periodStart: this.props.review.periodStart, periodEnd: this.props.review.periodEnd, questions: [], responses: []});
+    const initialErrors = validate( { periodEnd: this.props.review.periodEnd, questions: [], responses: []});
     let role = this.props.review.employee_id === this.props.userId ? 'Employee' : 'Supervisor';
     this.state = {
-      periodStart: this.props.review.periodStart,
+      periodStart: this.props.review.status === 'Closed' ? this.props.review.periodStart : this.props.lastReviewed,
       periodEnd: this.props.review.periodEnd,
       questions: this.props.review.questions,
       responses: this.props.review.responses,
@@ -77,7 +76,6 @@ class Review extends React.Component {
       formError: initialErrors.startDate || initialErrors.endDate || initialErrors.questions.length > 0 || initialErrors.responses.length > 0,
     }
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleStartDateChange = this.handleStartDateChange.bind(this);
     this.handleEndDateChange = this.handleEndDateChange.bind(this);
     this.handleTextEditorChange = this.handleTextEditorChange.bind(this);
   }
@@ -91,7 +89,6 @@ class Review extends React.Component {
       id: this.props.review.id,
       reviewInput: {
         status: newStatus,
-        periodStart: this.state.periodStart,
         periodEnd: this.state.periodEnd,
         questions: this.state.questions.map(question => ({
           answer: question.answer,
@@ -103,10 +100,6 @@ class Review extends React.Component {
         })),
       }
     })
-  }
-
-  handleStartDateChange(value) {
-    this.setState({ periodStart: value !== null ? value.format('M/DD/YYYY') : value});
   }
 
   handleEndDateChange(value) {
@@ -162,7 +155,6 @@ class Review extends React.Component {
 
   render() {
     const dateErrors = validate(this.state);
-
     return (
       <div>
         {this.props.location.query.printable === 'yes' && 
@@ -176,32 +168,24 @@ class Review extends React.Component {
               <div className="col-sm-12">
                 <div className="form-group">
                   <fieldset className="reviewQuestionFieldset">
-                    <legend>Period</legend>
-                    <div className="col-sm-6 col-xs-12" style={{ marginBottom: '10px' }}>
-                      <label htmlFor="startDate" className="col-xs-2" style={{ textAlign: 'right'}}>From: </label>
-                      <div className={dateErrors.startDate ? "col-xs-4 invalid" : "col-xs-4"}>
-                        {this.state.answersEditable &&
-                          <DatePickerWrapper startDate={new Date(this.state.periodStart)} id="startDate" onChange={(value) => this.handleStartDateChange(value)} />
-                        }
-                        {this.state.answersEditable && dateErrors.startDate &&
-                          <span style={{ color: 'red', fontWeight: 'bold'}}>&apos;From&apos; date is required</span>
-                        }                        
-                        {!this.state.answersEditable && 
-                          <span>{moment(new Date(this.state.periodStart)).format('M/DD/YYYY')}</span>
-                        }
+                    <legend>Conversation Details</legend>
+                    <div className="col-sm-12" style={{ marginBottom: '10px' }}>
+                      <label htmlFor="startDate" className="col-sm-4" style={{ textAlign: 'right'}}>Previous conversation completed: </label>
+                      <div className={dateErrors.startDate ? "col-sm-8 invalid" : "col-xs-8"}>
+                        <span>{!this.state.periodStart ? 'Never' : moment.utc(this.state.periodStart).format('M/DD/YYYY')}</span>
                       </div>
                     </div>
-                    <div className={dateErrors.endDate ? "col-sm-6 col-xs-12 invalid" : "col-sm-6 col-xs-12"}>
-                      <label htmlFor="endDate" className="col-xs-2" style={{ textAlign: 'right'}}>To: </label>
-                      <div className="col-xs-4">
+                    <div className={dateErrors.endDate ? "col-sm-12 invalid" : "col-sm-12"}>
+                      <label htmlFor="endDate" className="col-sm-4" style={{ textAlign: 'right'}}>Date of this conversation: </label>
+                      <div className="col-sm-8">
                         {this.state.answersEditable &&
-                          <DatePickerWrapper endDate={new Date(this.props.review.periodEnd)} id="endDate" onChange={(value) => this.handleEndDateChange(value)} />
+                          <DatePickerWrapper selected={moment.utc(this.state.periodEnd)} id="endDate" onChange={(value) => this.handleEndDateChange(value)} />
                         }
                         {this.state.answersEditable && dateErrors.endDate &&
-                          <span style={{ color: 'red', fontWeight: 'bold'}}>&apos;To&apos; date is required</span>
+                          <span style={{ color: 'red', fontWeight: 'bold', marginLeft: '10px' }}>&apos;Date of this conversation&apos; is required</span>
                         }
                         {!this.state.answersEditable && 
-                          <span>{moment(new Date(this.state.periodEnd)).format('M/DD/YYYY')}</span>
+                          <span>{moment.utc(this.state.periodEnd).format('M/DD/YYYY')}</span>
                         }
                       </div>
                     </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import Modal from 'react-modal';
 import { Link, browserHistory } from 'react-router';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
@@ -58,6 +59,23 @@ const validate = (state, onSubmit) => {
   };
 }
 
+const changesPresent = (state, original) => {
+  if (state.periodEnd !== original.periodEnd) {
+    return true;
+  }
+  for (let i = 0; i < state.questions.length; i += 1) {
+    if (state.questions[i].answer !== original.questions[i].answer) {
+      return true;
+    }
+  }
+  for (let i = 0; i < state.responses.length; i += 1) {
+    if (state.responses[i].Response !== original.responses[i].Response) {
+      return true;
+    }
+  }
+  return false;
+}
+
 class Review extends React.Component {
   constructor(props) {
     super(props);
@@ -74,10 +92,33 @@ class Review extends React.Component {
       actionRadio: 'saveonly', //todo set appropriate action value based on other vars,
       validationErrors: initialErrors,
       formError: initialErrors.startDate || initialErrors.endDate || initialErrors.questions.length > 0 || initialErrors.responses.length > 0,
+      modalIsOpen: false,
     }
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleEndDateChange = this.handleEndDateChange.bind(this);
     this.handleTextEditorChange = this.handleTextEditorChange.bind(this);
+    this.handleOpenModal = this.handleOpenModal.bind(this);
+    this.handleCloseModal = this.handleCloseModal.bind(this);
+    this.handleModalContinue = this.handleModalContinue.bind(this);
+  }
+
+  handleOpenModal() {
+    if (changesPresent(this.state, this.props.review)) {
+      this.setState({ modalIsOpen: true });
+    } else {
+      const path = ['conversation?emp=', this.props.review.employee_id, '&rev=', this.props.review.id, '&printable=yes'].join('');
+      browserHistory.push(path);
+    }
+  }
+
+  handleModalContinue() {
+    this.setState({ modalIsOpen: false });
+    const path = ['conversation?emp=', this.props.review.employee_id, '&rev=', this.props.review.id, '&printable=yes'].join('');
+    browserHistory.push(path);
+  }
+
+  handleCloseModal() {
+    this.setState({ modalIsOpen: false});
   }
 
   handleSubmit(event) {
@@ -164,7 +205,16 @@ class Review extends React.Component {
           <form>
             <div className="row form-horizontal">
               <h1>Conversation between {this.props.review.employee_name} and supervisor {this.props.review.reviewer_name}</h1>
-              <Link className="pull-right" style={{ fontSize: '20px' }} to={{ pathname: 'conversation', query: {emp: this.props.review.employee_id, rev: this.props.review.id, printable: 'yes'}} }>Printable Version</Link>
+              <Link className="pull-right" style={{ fontSize: '20px' }} onClick={this.handleOpenModal}>Printable Version</Link>
+              <Modal
+                isOpen={this.state.modalIsOpen}
+                contentLabel="Discard conversation changes?"
+              >
+                <h1 ref={subtitle => this.subtitle = subtitle}>Discard changes to this conversation?</h1>
+                <p>There are unsaved changes to this conversation. Navigating away from this page will cause these changes to be lost.</p>
+                  <button className="btn btn-primary" onClick={this.handleCloseModal}>Cancel</button>
+                  <button className="btn btn-warning btn-sm" style={{ marginLeft: '10px' }} onClick={this.handleModalContinue}>Disgard changes and proceed to printable conversation</button>
+              </Modal>
               <div className="col-sm-12">
                 <div className="form-group">
                   <fieldset className="reviewQuestionFieldset">

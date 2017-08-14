@@ -35,7 +35,8 @@ const PrintableReview = props => (
             <div className="col-sm-12" style={{ marginBottom: '10px' }}>
               <label htmlFor="startDate" className="col-sm-4" style={{ textAlign: 'right' }}>Previous conversation completed: </label>
               <div className="col-sm-8">
-                <span>{!props.review.periodStart ? '--' : moment.utc(props.review.periodStart).format('M/DD/YYYY')} </span>
+                {console.log('test', props.lastReviewed)}
+                <span>{!(props.review.status === 'Closed' ? props.review.periodStart : props.lastReviewed) ? 'Never' : moment.utc(props.review.periodStart).format('M/DD/YYYY')} </span>
               </div>
             </div>
             <div className="col-sm-12">

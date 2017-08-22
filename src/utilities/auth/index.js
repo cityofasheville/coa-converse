@@ -1,6 +1,7 @@
 import React from 'react';
 import firebase from 'firebase';
 import firebaseui from 'firebaseui';
+import { browserHistory } from 'react-router';
 import { userLoggedIn, userLoggedOut, loginError, logoutError } from './authActions';
 
 const authProviders = [
@@ -57,6 +58,7 @@ const firebaseLogout = (dispatch) => {
   return firebase.auth().signOut()
     .then(() => {
       dispatch(userLoggedOut());
+      browserHistory.push('/');
     }, (error) => {
       dispatch(logoutError(error));
     });

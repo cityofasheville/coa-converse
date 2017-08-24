@@ -49,6 +49,7 @@ const initializeFirebaseAuthUI = () => {
   authUi.start('#firebaseui-auth-container', {
     signInSuccessUrl: '/',
     signInOptions: authProviders,
+    signInFlow: 'popup',
     // TODO:  Terms of service url.
     tosUrl: '<your-tos-url>',
   });
@@ -63,7 +64,6 @@ const firebaseLogout = (dispatch) => {
       dispatch(logoutError(error));
     });
 };
-
 
 export const AuthProviders = () => (
   <div id="firebaseui-auth-container"></div>

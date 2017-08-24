@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux';
-import { USER_LOGGED_IN, USER_LOGGED_OUT, LOGIN_LINK_CLICKED, CLOSE_MODAL_CLICKED, AUTH_CONTROL_DROPDOWN_CLICKED } from './authConstants';
+import { USER_LOGGED_IN, USER_LOGGED_OUT, LOGIN_LINK_CLICKED, CLOSE_MODAL_CLICKED } from './authConstants';
 const objectAssign = require('object-assign');
 
 const initialUserState = {
@@ -16,7 +16,7 @@ const user = (state = initialUserState, action) => {
           privilege: action.data.privilege,
           name: action.data.name,
           email: action.data.email,
-          provider: action.data.provider,
+          provider: action.data.providerId,
           token: action.data.token,
           logout: action.data.logout,
         });

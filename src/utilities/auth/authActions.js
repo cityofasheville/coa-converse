@@ -1,4 +1,4 @@
-import { USER_LOGGED_IN, USER_LOGGED_OUT, LOGIN_LINK_CLICKED, CLOSE_MODAL_CLICKED, LOGOUT_LINK_CLICKED, LOGIN_ERROR, LOGOUT_ERROR, AUTH_CONTROL_DROPDOWN_CLICKED } from './authConstants';
+import { USER_LOGGED_IN, USER_LOGGED_OUT, LOGIN_LINK_CLICKED, CLOSE_MODAL_CLICKED, LOGOUT_LINK_CLICKED, LOGIN_ERROR, LOGOUT_ERROR } from './authConstants';
 
 export const loginLinkClicked = () => (
   {
@@ -20,7 +20,7 @@ export const logoutLinkClicked = logout => (
 
 export const userLoggedIn = (user) => {
   let privilege = 1;
-  if (user.provider === 'google.com') {
+  if (user.providerId === 'google.com') {
     if (user.email.endsWith('ashevillenc.gov')) {
       privilege = 2;
     }
@@ -30,7 +30,7 @@ export const userLoggedIn = (user) => {
     data: {
       email: user.email,
       name: user.name,
-      provider: user.provider,
+      provider: user.providerId,
       token: user.token,
       logout: user.logout,
       privilege,
@@ -38,7 +38,6 @@ export const userLoggedIn = (user) => {
   };
   return rval;
 };
-
 
 export const userLoggedOut = () => (
   { type: USER_LOGGED_OUT }

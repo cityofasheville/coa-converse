@@ -216,6 +216,11 @@ class Review extends React.Component {
                   <button className="btn btn-warning btn-sm" style={{ marginLeft: '10px' }} onClick={this.handleModalContinue}>Disgard changes and proceed to printable conversation</button>
               </Modal>
               <div className="col-sm-12">
+                <div className="form-group" id="serverError" hidden>
+                  <div className="alert alert-danger alert-sm">
+                    There was an error processing your submission. Please contact <a href="mailto:Helpdesk@ashevillenc.gov" target="_blank" style={{ color: '#fff', textDecoration: 'underline' }}>help desk</a> and inform them of the time and date you tried to submit the form.
+                  </div>
+                </div>
                 <div className="form-group">
                   <fieldset className="reviewQuestionFieldset">
                     <legend>Conversation Details</legend>
@@ -330,12 +335,12 @@ class Review extends React.Component {
                         <div className="alert alert-info">
                           You have acknowledged this conversation. When your supervisor closes the conversation, it will appear in your HR record.
                         </div>
-                      }                                           
+                      }             
                     </fieldset>
                   </div>
                 }
               </div>
-            </div>
+            </div>                          
           </form>
         }
         {this.state.role === 'Supervisor' &&
@@ -418,6 +423,8 @@ export default graphql(submitReview, {
     submit: (reviewData) => mutate({ variables: { id: reviewData.id, reviewInput: reviewData.reviewInput }}).then(({ data }) => {
         browserHistory.push(['/conversations?emp', data.updateReview.employee_id].join('='));
       }).catch((error) => {
+        document.getElementById('serverError').style.display = 'block';
+        scrollTo(document.body, 0, 100);
         console.log('there was an error sending the query', error);
       }),
   })

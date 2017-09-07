@@ -1,5 +1,5 @@
 import ApolloClient, { createNetworkInterface } from 'apollo-client';
-
+import firebase from 'firebase';
 
 //const SERVER_URL = 'https://coa-converse-api.ashevillenc.gov/graphql';
 // const SERVER_URL = 'http://localhost:8080/graphql';
@@ -14,8 +14,20 @@ networkInterface.use([{
       req.options.headers = {};
     }
     // get the authentation token from storage if it exists
-    req.options.headers.authorization = sessionStorage.getItem('token') || null;
-    next();
+    const signedInUser = firebase.auth().currentUser;
+    if (signedInUser) {
+      signedInUser.getIdToken()
+        .then((idToken) => {
+          sessionStorage.setItem('token', idToken);
+          req.options.headers.authorization = sessionStorage.getItem('token');
+          next();
+        }, (error) => {
+          console.log(`REFRESH TOKEN ERROR: ${JSON.stringify(error)}`);
+        });
+    } else {
+      req.options.headers.authorization = sessionStorage.getItem('token') || null;
+      next();
+    }
   },
 }]);
 /* eslint-enable no-param-reassign */

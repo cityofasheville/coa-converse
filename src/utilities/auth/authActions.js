@@ -31,7 +31,7 @@ export const userLoggedIn = (user) => {
       email: user.email,
       name: user.name,
       provider: user.providerId,
-      token: user.token,
+      // token: user.token,
       logout: user.logout,
       privilege,
     },

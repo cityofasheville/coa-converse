@@ -1,12 +1,10 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
-import { connect } from 'react-redux';
 import EmployeesTable from './EmployeesTable';
 import LoadingAnimation from '../shared/LoadingAnimation';
 
-const Employees = props => {
+const Employees = (props) => {
   if (props.data.loading) { // eslint-disable-line react/prop-types
     return <LoadingAnimation />;
   }
@@ -21,10 +19,10 @@ const Employees = props => {
           <h1>Employees</h1>
         </div>
       </div>
-      <EmployeesTable {...props}/>
+      <EmployeesTable {...props} />
     </div>
   );
-}
+};
 
 const getEmployeesQuery = gql`
   query getEmployeesQuery($id: Int) {
@@ -42,11 +40,11 @@ const getEmployeesQuery = gql`
   }
 `;
 const EmployeesGQL = graphql(getEmployeesQuery, {
-  options: (ownProps)=> ({
+  options: ownProps => ({
     variables: {
-      id: ownProps.userId
-    }
-  })
+      id: ownProps.userId,
+    },
+  }),
 })(Employees);
 
 export default EmployeesGQL;

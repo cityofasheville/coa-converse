@@ -23,10 +23,10 @@ const initializeFirebaseApp = (store) => {
         email: user.email,
         name: user.displayName,
         provider: user.providerData[0].providerId,
-        token: null,
+        // token: null,
         logout: firebaseLogout,
       };
-      user.getToken(true) /* forceRefresh */
+      user.getIdToken(true) /* forceRefresh */
         .then((idToken) => {
           userData.token = idToken;
           sessionStorage.setItem('token', idToken);

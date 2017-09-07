@@ -16,8 +16,8 @@ const user = (state = initialUserState, action) => {
           privilege: action.data.privilege,
           name: action.data.name,
           email: action.data.email,
-          provider: action.data.providerId,
-          token: action.data.token,
+          // provider: action.data.providerId,
+          // token: action.data.token,
           logout: action.data.logout,
         });
       }

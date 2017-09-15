@@ -1,15 +1,13 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import EmployeeHome from './EmployeeHome';
 import { loginLinkClicked } from '../utilities/auth/authActions';
-import LoadingAnimation from '../shared/LoadingAnimation';
 
 const Homepage = (props) => {
   if (!props.user.loggedIn) {
     return (
       <div>
-        Welcome to City of Asheville Conversations. Please <a href="#" onClick={(e) => { e.preventDefault(); props.dispatch(loginLinkClicked()); }} className="">log in</a>.
+        Welcome to City of Asheville Employee Check-in. Please <a href="#" onClick={(e) => { e.preventDefault(); props.dispatch(loginLinkClicked()); }} className="">log in</a>.
       </div>
     );
   }

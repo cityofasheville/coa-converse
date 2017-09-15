@@ -38,7 +38,7 @@ const Reviews = props => {
     <div>
       <div className="row">
         <div className="col-sm-12">
-          <h1>Conversations with {props.data.employee.name}</h1>
+          <h1>Check-ins with {props.data.employee.name}</h1>
           <span style={{ fontSize: '25px', marginTop: '10px' }} className="pull-right">Current Supervisor: {props.data.employee.supervisor_name || '--'}</span>
         </div>
       </div>

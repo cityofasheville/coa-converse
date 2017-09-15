@@ -30,12 +30,12 @@ const getTimeSinceLastConversation = (reviewDate, reviewable) => {
 
 const dataColumnsCurrent = [
   {
-    Header: (<div>Conversation Date</div>),
+    Header: (<div>Check-in Date</div>),
     id: 'periodEnd',
-    accessor: (review) => (<span title="View conversation">{moment.utc(review.periodEnd).format('M/DD/YYYY')}</span>),
+    accessor: (review) => (<span title="View check-in">{moment.utc(review.periodEnd).format('M/DD/YYYY')}</span>),
     minWidth: 160,
     Cell: (row) => (
-      <Link to={{ pathname: 'conversation', query: { emp: row.original.employee_id, rev: row.original.id } }}>{row.value}</Link>
+      <Link to={{ pathname: 'check-in', query: { emp: row.original.employee_id, 'check-in': row.original.id } }}>{row.value}</Link>
     ),
   },
   {
@@ -68,12 +68,12 @@ const dataColumnsCurrent = [
 
 const dataColumns = [
   {
-    Header: (<div>Conversation Date</div>),
+    Header: (<div>Check-in Date</div>),
     id: 'periodEnd',
-    accessor: (review) => (<span title="View conversation">{moment.utc(review.periodEnd).format('M/DD/YYYY')}</span>),
+    accessor: (review) => (<span title="View check-in">{moment.utc(review.periodEnd).format('M/DD/YYYY')}</span>),
     minWidth: 200,
     Cell: (row) => (
-      <Link to={{ pathname: 'conversation', query: { emp: row.original.employee_id, rev: row.original.id } }}>{row.value}</Link>
+      <Link to={{ pathname: 'check-in', query: { emp: row.original.employee_id, 'check-in': row.original.id } }}>{row.value}</Link>
     ),
   },
   {
@@ -97,21 +97,21 @@ const ReviewsTable = props => {
     <div className="row">
       <div className="col-sm-12">
         <h2>
-          {props.current ? 'Current Conversation' : 'Past Conversations'}
+          {props.current ? 'Current Check-in' : 'Past Check-ins'}
           {props.current &&
-            <span style={{ fontSize: '16px', marginLeft: '15px', fontStyle: 'italic' }}>Time since last conversation: {getTimeSinceLastConversation(props.lastReviewed, props.reviewable)}</span>
+            <span style={{ fontSize: '16px', marginLeft: '15px', fontStyle: 'italic' }}>Time since last check-in: {getTimeSinceLastConversation(props.lastReviewed, props.reviewable)}</span>
           }
         </h2>
         {reviews.length === 0 &&
           <div className="alert alert-warning">
-            <span className="alert-text">{props.current ? 'No current conversation found' : 'No past conversations found'}</span>
+            <span className="alert-text">{props.current ? 'No current check-in found' : 'No past check-ins found'}</span>
             {props.current && (props.supervisorId === loggedInEmpId) &&
-              <Link to={{ pathname: 'conversation', query: { emp: props.emp } }}><div className="btn btn-primary btn-sm" style={{ marginLeft: '10px' }}>Begin a conversation</div></Link>
+              <Link to={{ pathname: 'check-in', query: { emp: props.emp } }}><div className="btn btn-primary btn-sm" style={{ marginLeft: '10px' }}>Begin a check-in</div></Link>
             }
           </div>
         }
         {props.reviews.length > 0 &&
-          <div alt={props.current ? 'Table displaying current conversation' : 'Table of past conversations'} style={{ marginTop: '10px' }}>
+          <div alt={props.current ? 'Table displaying current check-in' : 'Table of past check-ins'} style={{ marginTop: '10px' }}>
             <ReactTable
               data={reviews}
               columns={props.current ? dataColumnsCurrent : dataColumns}

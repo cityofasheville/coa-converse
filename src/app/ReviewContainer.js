@@ -64,7 +64,7 @@ const ReviewContainerGQL = compose(
     name: 'reviewQuery',
     options: (ownProps)=> ({
       variables: {
-        id: ownProps.location.query.rev || -1,
+        id: ownProps.location.query['check-in'] || -1,
         employee_id: ownProps.location.query.emp,
       }
     })

@@ -47,12 +47,12 @@ const EmployeeHome = (props) => {
     <div className="row">
       <div className="col-sm-12">
         {isSupervisor(props.user) && 
-          <RadioGroup name="modeRadio" selectedValue={props.location.query.mode || (props.location.query.emp ? 'conversations' : 'employees')} onChange={refreshLocation}>
+          <RadioGroup name="modeRadio" selectedValue={props.location.query.mode || (props.location.query.emp ? 'check-ins' : 'employees')} onChange={refreshLocation}>
             <label>
               <Radio value="employees" />{props.location.query.emp ? [props.data.employee.name, '\'s'].join('') : 'My'} employees
             </label>
             <label>
-              <Radio value="conversations" />{props.location.query.emp ?  [props.data.employee.name, '\'s'].join('') : 'My'} conversations
+              <Radio value="check-ins" />{props.location.query.emp ?  [props.data.employee.name, '\'s'].join('') : 'My'} check-ins
             </label>
           </RadioGroup>
         }

@@ -106,14 +106,14 @@ class Review extends React.Component {
     if (changesPresent(this.state, this.props.review)) {
       this.setState({ modalIsOpen: true });
     } else {
-      const path = ['conversation?emp=', this.props.review.employee_id, '&rev=', this.props.review.id, '&printable=yes'].join('');
+      const path = ['check-in?emp=', this.props.review.employee_id, '&check-in=', this.props.review.id, '&printable=yes'].join('');
       browserHistory.push(path);
     }
   }
 
   handleModalContinue() {
     this.setState({ modalIsOpen: false });
-    const path = ['conversation?emp=', this.props.review.employee_id, '&rev=', this.props.review.id, '&printable=yes'].join('');
+    const path = ['check-in?emp=', this.props.review.employee_id, '&check-in=', this.props.review.id, '&printable=yes'].join('');
     browserHistory.push(path);
   }
 
@@ -204,16 +204,16 @@ class Review extends React.Component {
         {this.props.location.query.printable !== 'yes' &&
           <form>
             <div className="row form-horizontal">
-              <h1>Conversation between {this.props.review.employee_name} and supervisor {this.props.review.reviewer_name}</h1>
+              <h1>Check-in between {this.props.review.employee_name} and supervisor {this.props.review.reviewer_name}</h1>
               <Link className="pull-right" style={{ fontSize: '20px' }} onClick={this.handleOpenModal}>Printable Version</Link>
               <Modal
                 isOpen={this.state.modalIsOpen}
-                contentLabel="Discard conversation changes?"
+                contentLabel="Discard check-in changes?"
               >
-                <h1 ref={subtitle => this.subtitle = subtitle}>Discard changes to this conversation?</h1>
-                <p>There are unsaved changes to this conversation. Navigating away from this page will cause these changes to be lost.</p>
+                <h1 ref={subtitle => this.subtitle = subtitle}>Discard changes to this check-in?</h1>
+                <p>There are unsaved changes to this check-in. Navigating away from this page will cause these changes to be lost.</p>
                   <button className="btn btn-primary" onClick={this.handleCloseModal}>Cancel</button>
-                  <button className="btn btn-warning btn-sm" style={{ marginLeft: '10px' }} onClick={this.handleModalContinue}>Disgard changes and proceed to printable conversation</button>
+                  <button className="btn btn-warning btn-sm" style={{ marginLeft: '10px' }} onClick={this.handleModalContinue}>Disgard changes and proceed to printable check-in</button>
               </Modal>
               <div className="col-sm-12">
                 <div className="form-group" id="serverError" hidden>
@@ -223,21 +223,21 @@ class Review extends React.Component {
                 </div>
                 <div className="form-group">
                   <fieldset className="reviewQuestionFieldset">
-                    <legend>Conversation Details</legend>
+                    <legend>Check-in Details</legend>
                     <div className="col-sm-12" style={{ marginBottom: '10px' }}>
-                      <label htmlFor="startDate" className="col-sm-4" style={{ textAlign: 'right' }}>Previous conversation completed: </label>
+                      <label htmlFor="startDate" className="col-sm-4" style={{ textAlign: 'right' }}>Previous check-in completed: </label>
                       <div className={dateErrors.startDate ? 'col-sm-8 invalid' : 'col-xs-8'}>
                         <span>{!this.state.periodStart ? 'Never' : moment.utc(this.state.periodStart).format('M/DD/YYYY')}</span>
                       </div>
                     </div>
                     <div className={dateErrors.endDate ? 'col-sm-12 invalid' : 'col-sm-12'}>
-                      <label htmlFor="endDate" className="col-sm-4" style={{ textAlign: 'right' }}>Date of this conversation: </label>
+                      <label htmlFor="endDate" className="col-sm-4" style={{ textAlign: 'right' }}>Date of this check-in: </label>
                       <div className="col-sm-8">
                         {this.state.answersEditable &&
                           <DatePickerWrapper selected={moment.utc(this.state.periodEnd)} id="endDate" onChange={value => this.handleEndDateChange(value)} />
                         }
                         {this.state.answersEditable && dateErrors.endDate &&
-                          <span style={{ color: 'red', fontWeight: 'bold', marginLeft: '10px' }}>&apos;Date of this conversation&apos; is required</span>
+                          <span style={{ color: 'red', fontWeight: 'bold', marginLeft: '10px' }}>&apos;Date of this check-in&apos; is required</span>
                         }
                         {!this.state.answersEditable &&
                           <span>{moment.utc(this.state.periodEnd).format('M/DD/YYYY')}</span>
@@ -279,7 +279,7 @@ class Review extends React.Component {
                             </label>
                           </RadioGroup>
                           <input type="button" className="btn btn-primary" value="Save" onClick={this.handleSubmit} />
-                          <span hidden={!this.state.formError} style={{ color: 'red', marginLeft: '5px' }}>Required fields are missing. You must complete all required fields before you can submit this conversation for employee acknowledgement.</span>
+                          <span hidden={!this.state.formError} style={{ color: 'red', marginLeft: '5px' }}>Required fields are missing. You must complete all required fields before you can submit this check-in for employee acknowledgement.</span>
                         </div>
                       }
                       {this.state.role === 'Supervisor' && this.props.review.status === 'Acknowledged' &&
@@ -333,7 +333,7 @@ class Review extends React.Component {
                       }
                       {this.state.role === 'Employee' && this.props.review.status === 'Acknowledged' &&
                         <div className="alert alert-info">
-                          You have acknowledged this conversation. When your supervisor closes the conversation, it will appear in your HR record.
+                          You have acknowledged this check-in. When your supervisor closes the check-in, it will appear in your HR record.
                         </div>
                       }
                     </fieldset>
@@ -345,12 +345,12 @@ class Review extends React.Component {
         }
         {this.state.role === 'Supervisor' &&
           <div>
-            <Link style={{ fontSize: '20px' }} to={{ pathname: '/conversations', query: { emp: this.props.review.employee_id } }}>Back to {this.props.review.employee_name}&apos;s conversations<br /></Link>
-            <Link style={{ fontSize: '20px' }} to={{ pathname: '/', query: { mode: 'employees' } }}>Back to all my employee conversations</Link>
+            <Link style={{ fontSize: '20px' }} to={{ pathname: '/check-ins', query: { emp: this.props.review.employee_id } }}>Back to {this.props.review.employee_name}&apos;s check-ins<br /></Link>
+            <Link style={{ fontSize: '20px' }} to={{ pathname: '/', query: { mode: 'employees' } }}>Back to all my employee check-ins</Link>
           </div>
         }
         {this.state.role === 'Employee' &&
-          <Link style={{ fontSize: '20px' }} to={{ pathname: '/' }}>Back to my conversations</Link>
+          <Link style={{ fontSize: '20px' }} to={{ pathname: '/' }}>Back to my check-ins</Link>
         }
       </div>
     );
@@ -421,7 +421,7 @@ const submitReview = gql`
 export default graphql(submitReview, {
   props: ({ mutate }) => ({
     submit: reviewData => mutate({ variables: { id: reviewData.id, reviewInput: reviewData.reviewInput } }).then(({ data }) => {
-      browserHistory.push(['/conversations?emp', data.updateReview.employee_id].join('='));
+      browserHistory.push(['/check-ins?emp', data.updateReview.employee_id].join('='));
     }).catch((error) => {
       document.getElementById('serverError').style.display = 'block';
       scrollTo(document.body, 0, 100);

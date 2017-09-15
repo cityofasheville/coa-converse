@@ -1,6 +1,6 @@
 # COA CONVERSE App
 
-A conversations app for employees and supervisors to set goals and evaluate progress.
+A check-in app for employees and supervisors to set goals and evaluate progress.
 
 ## License
 

@@ -14,7 +14,7 @@ export const Navbar = (props) => (
         <div className="navbar-header">
           <div className="pull-left">
             <IndexLink to="/" className="navbar-brand nounderline" >
-              <span style={{ fontSize: '30px', marginBottom: '-10px' }}>Talent Development Conversations
+              <span style={{ fontSize: '30px', marginBottom: '-10px' }}>Employee Check-in
               </span>
               <br />
               <span style={{ fontStyle: 'italic', fontSize: '13px' }}>City of Asheville, NC</span>

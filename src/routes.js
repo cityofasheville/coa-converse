@@ -18,8 +18,8 @@ const Routes = props => (
     <Router history={browserHistory}>
       <Route path="/" component={App}>
         <IndexRoute component={Home} />
-        <Route path="conversations" component={Reviews}></Route>
-        <Route path="conversation" component={ReviewContainer}></Route>
+        <Route path="check-ins" component={Reviews}></Route>
+        <Route path="check-in" component={ReviewContainer}></Route>
       </Route>
     </Router>
   </ApolloProvider>

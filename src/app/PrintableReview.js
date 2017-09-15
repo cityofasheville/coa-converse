@@ -26,21 +26,21 @@ const getMainReviewResponse = (responses) => {
 const PrintableReview = props => (
   <div>
     <div className="row form-horizontal">
-      <h1>Conversation between {props.review.employee_name} and supervisor {props.review.reviewer_name}</h1>
-      <Link className="pull-right" style={{ fontSize: '20px' }} to={{ pathname: 'conversation', query: {emp: props.review.employee_id, rev: props.review.id, printable: 'no'}} }>Back to conversation</Link>
+      <h1>Check-in between {props.review.employee_name} and supervisor {props.review.reviewer_name}</h1>
+      <Link className="pull-right" style={{ fontSize: '20px' }} to={{ pathname: 'check-in', query: {emp: props.review.employee_id, 'check-in': props.review.id, printable: 'no'}} }>Back to check-in</Link>
       <div className="col-sm-12">
         <div className="form-group">
           <fieldset className="reviewQuestionFieldset">
-            <legend>Conversation Details</legend>
+            <legend>Check-in Details</legend>
             <div className="col-sm-12" style={{ marginBottom: '10px' }}>
-              <label htmlFor="startDate" className="col-sm-4" style={{ textAlign: 'right' }}>Previous conversation completed: </label>
+              <label htmlFor="startDate" className="col-sm-4" style={{ textAlign: 'right' }}>Previous check-in completed: </label>
               <div className="col-sm-8">
                 {console.log('test', props.lastReviewed)}
                 <span>{!(props.review.status === 'Closed' ? props.review.periodStart : props.lastReviewed) ? 'Never' : moment.utc(props.review.periodStart).format('M/DD/YYYY')} </span>
               </div>
             </div>
             <div className="col-sm-12">
-              <label htmlFor="endDate" className="col-sm-4" style={{ textAlign: 'right' }}>Date of this conversation: </label>
+              <label htmlFor="endDate" className="col-sm-4" style={{ textAlign: 'right' }}>Date of this check-in: </label>
               <div className="col-sm-8">
                  <span>{moment.utc(props.review.periodEnd).format('M/DD/YYYY')} </span>
               </div>
@@ -76,7 +76,7 @@ const PrintableReview = props => (
               }
             </div>
             {props.review.status !== 'Closed' &&
-              <div style={{ marginTop: '25px', marginBottom: '25px' }}><strong>NOTE:</strong> This conversation has not yet been closed, therefore this printout may not reflect the final version of this conversation.</div>
+              <div style={{ marginTop: '25px', marginBottom: '25px' }}><strong>NOTE:</strong> This check-in has not yet been closed, therefore this printout may not reflect the final version of this check-in.</div>
             }
           </fieldset>
         </div>

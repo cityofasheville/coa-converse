@@ -32,23 +32,20 @@ const getMainReviewResponse = (responses) => {
 };
 
 const validate = (state, onSubmit) => {
-  const invalidQuestions = [];
-  const invalidResponses = [];
+  let invalidQuestions = [];
+  const answeredQuestions = [];
 
   if (onSubmit) {
     if (state.answersEditable) {
       for (let question of state.questions) {
         if (!question.answer || question.answer === '') { // && question.required) {
           invalidQuestions.push(question.id);
+        } else {
+          answeredQuestions.push(question.id);
         }
       }
-    }
-
-    if (state.responsesEditable) {
-      for (let response of state.responses) {
-        if (!response.Response || response.Response === '') {
-          invalidResponses.push(response.question_id);
-        }
+      if (answeredQuestions.length > 0) {
+        invalidQuestions = [];
       }
     }
   }
@@ -56,7 +53,7 @@ const validate = (state, onSubmit) => {
   return {
     endDate: state.periodEnd == null,
     questions: onSubmit ? invalidQuestions : state.questions,
-    responses: onSubmit ? invalidResponses : state.responses,
+    responses: onSubmit ? [] : state.responses,
   };
 };
 
@@ -279,15 +276,15 @@ class Review extends React.Component {
                 <div className="form-group">
                   {this.props.review.questions.map((question, index) => (
                     <div key={['question', index].join('_')}>
-                      <Question question={question} required requiredText={this.state.role === 'Supervisor' ? 'This question must be answered before submitting for employee acknowledgement' : ''} invalid={this.state.validationErrors.questions.includes(question.id)} editable={this.state.answersEditable} onBlur={question.type === 'Text' ? (event => (this.handleTextEditorChange(event))) : (value => (this.handleRadioQuestionChange(value, question.id)))} />
+                      <Question question={question} editable={this.state.answersEditable} onBlur={question.type === 'Text' ? (event => (this.handleTextEditorChange(event))) : (value => (this.handleRadioQuestionChange(value, question.id)))} />
                       {getResponse(question.id, this.state.responses) !== null &&
-                        <Response response={getResponse(question.id, this.state.responses)} invalid={this.state.validationErrors.responses.includes(question.id)} requiredText="This response must be completed before acknowledgement or request for further discussion." required={this.state.responsesEditable} editable={this.state.responsesEditable} onChange={event => (this.handleTextEditorChange(event))} />
+                        <Response response={getResponse(question.id, this.state.responses)} editable={this.state.responsesEditable} onChange={event => (this.handleTextEditorChange(event))} />
                       }
                     </div>
                   ))}
                 </div>
                 <div className="form-group">
-                  <Response response={getMainReviewResponse(this.state.responses)} invalid={this.state.validationErrors.responses.includes(null)} requiredText="This response must be completed before acknowledgement or request for further discussion." required={this.state.responsesEditable} standalone editable={this.state.responsesEditable} onChange={event => (this.handleTextEditorChange(event))} />
+                  <Response response={getMainReviewResponse(this.state.responses)} standalone editable={this.state.responsesEditable} onChange={event => (this.handleTextEditorChange(event))} />
                 </div>
                 {this.props.review.status !== 'Closed' && this.state.role !== 'Viewer' &&
                   <div className="form-group">
@@ -309,7 +306,7 @@ class Review extends React.Component {
                             </label>
                           </RadioGroup>
                           <input type="button" className="btn btn-primary" value="Save" onClick={this.handleSubmit} />
-                          <span hidden={!this.state.formError} style={{ color: 'red', marginLeft: '5px' }}>Required fields are missing. You must complete all required fields before you can submit this check-in for employee acknowledgement.</span>
+                          <span hidden={!this.state.formError} style={{ color: 'red', marginLeft: '5px' }}>Required fields are missing. You must supply a Date of check-in and fill in at least one section before you can submit this check-in for employee acknowledgement.</span>
                         </div>
                       }
                       {this.state.role === 'Supervisor' && this.props.review.status === 'Acknowledged' &&

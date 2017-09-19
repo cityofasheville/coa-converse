@@ -20,6 +20,7 @@ class Response extends React.Component {
   }
 
   render() {
+    if (this.props.response === null) return null;
     if (this.props.standalone) {
       return (
         <fieldset className="reviewQuestionFieldset">

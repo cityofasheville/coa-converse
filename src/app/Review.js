@@ -274,14 +274,19 @@ class Review extends React.Component {
                   </Collapsible>
                 </div>
                 <div className="form-group">
-                  {this.props.review.questions.map((question, index) => (
-                    <div key={['question', index].join('_')}>
-                      <Question question={question} editable={this.state.answersEditable} onBlur={question.type === 'Text' ? (event => (this.handleTextEditorChange(event))) : (value => (this.handleRadioQuestionChange(value, question.id)))} />
-                      {getResponse(question.id, this.state.responses) !== null &&
-                        <Response response={getResponse(question.id, this.state.responses)} editable={this.state.responsesEditable} onChange={event => (this.handleTextEditorChange(event))} />
-                      }
-                    </div>
-                  ))}
+                  {
+                    this.props.review.questions.map((question, index) => {
+                      const resp = getResponse(question.id, this.state.responses);
+                      return (
+                        <div key={['question', index].join('_')}>
+                          <Question question={question} editable={this.state.answersEditable} onBlur={question.type === 'Text' ? (event => (this.handleTextEditorChange(event))) : (value => (this.handleRadioQuestionChange(value, question.id)))} />
+                          {resp !== null &&
+                            <Response response={resp} editable={this.state.responsesEditable} onChange={event => (this.handleTextEditorChange(event))} />
+                          }
+                        </div>
+                      );
+                    })
+                  }
                 </div>
                 <div className="form-group">
                   <Response response={getMainReviewResponse(this.state.responses)} standalone editable={this.state.responsesEditable} onChange={event => (this.handleTextEditorChange(event))} />

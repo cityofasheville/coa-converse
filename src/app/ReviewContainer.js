@@ -14,7 +14,6 @@ const ReviewContainer = props => {
   if (props.reviewQuery.error || props.lastReviewed.error) { // eslint-disable-line react/prop-types
     return <p>{props.reviewQuery.error ? props.reviewQuery.error.message : ''}{props.lastReviewed.error ? props.lastReviewed.error.message : ''}</p>; // eslint-disable-line react/prop-types
   }
-
   return (
     <Review review={props.reviewQuery.review} userId={props.reviewQuery.employee.id} printable={props.location.query.printable === 'yes'} lastReviewed={props.lastReviewed.employee.last_reviewed} location={props.location} />
   );

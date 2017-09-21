@@ -28,6 +28,7 @@ class Question extends React.Component {
     return (
       <fieldset className="reviewQuestionFieldset">
         <div dangerouslySetInnerHTML={markup(this.props.question.question)} />
+        <h3>Supervisor</h3>
         {this.props.question.type === 'Text' &&
           <RichTextEditor
             id={['qanswer', this.props.question.id].join('-')}

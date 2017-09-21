@@ -42,7 +42,7 @@ class Response extends React.Component {
     } else {
       return (
         <div style={{ marginBottom: '25px' }}>
-          <h3>Employee Response</h3>
+          <h3>Employee</h3>
           <RichTextEditor
             id={['response', this.props.response.question_id].join('-')}
             content={this.props.response.Response}

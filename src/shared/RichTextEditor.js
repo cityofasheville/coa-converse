@@ -20,6 +20,8 @@ class RichTextEditor extends React.Component {
         branding: false,
         readonly: !this.props.editable,
         content_style: !this.props.editable ? "body { background-color: rgb(248, 248, 248) !important; }* { cursor: not-allowed }" : (this.props.invalid ? ".mce-content-body { background-color: #ffe2e2 !important }": "body { background: #fff }"),
+        browser_spellcheck: true,
+        height: 250,
       }}
       onBlur={this.props.onChange}
     />

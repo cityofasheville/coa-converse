@@ -12,12 +12,12 @@ const getTimeSinceLastConversation = (employee) => {
   }
   const lastReviewedDate = employee.last_reviewed ? moment.utc(employee.last_reviewed).format('M/DD/YYYY') : null;
   if (lastReviewedDate === null) {
-    return <Link to={{ pathname: 'check-in', query: { emp: employee.id } }}><span style={{ color: 'orange' }}>Never</span></Link>;
+    return <Link to={{ pathname: 'check-in', query: { emp: employee.id } }} style={{ color: 'orange' }}>Never</Link>;
   }
   const today = moment.utc(new Date(), 'M/DD/YYYY');
   const daysSinceLastReview = today.diff(moment.utc(lastReviewedDate, 'M/DD/YYYY'), 'days');
   if (daysSinceLastReview >= 90) {
-    return <Link to={{ pathname: 'check-in', query: { emp: employee.id } }}><span style={{ color: 'red' }}>{daysSinceLastReview} days <Icon path={IM_WARNING2} size={18} /></span></Link>
+    return <Link to={{ pathname: 'check-in', query: { emp: employee.id } }} style={{ color: 'red' }}>{daysSinceLastReview} days <Icon path={IM_WARNING2} size={18} /></Link>
   }
   if (daysSinceLastReview > 83) {
     return <Link to={{ pathname: 'check-in', query: { emp: employee.id } }}><span style={{ color: 'orange'}}>{daysSinceLastReview} days <Icon path={IM_HOURGLASS} size={18} /></span></Link>

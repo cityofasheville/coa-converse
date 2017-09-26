@@ -26,7 +26,7 @@ const getMainReviewResponse = (responses) => {
 const PrintableReview = props => (
   <div>
     <div className="row form-horizontal">
-      <h1>Check-in between {props.review.employee_name} and supervisor {props.review.reviewer_name}</h1>
+      <h1>Check-in between {props.review.employee_name} <br /> and supervisor {props.review.reviewer_name}</h1>
       <Link className="pull-right" style={{ fontSize: '20px' }} to={{ pathname: 'check-in', query: {emp: props.review.employee_id, 'check-in': props.review.id, printable: 'no'}} }>Back to check-in</Link>
       <div className="col-sm-12">
         <div className="form-group">

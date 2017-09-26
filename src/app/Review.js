@@ -202,7 +202,7 @@ class Review extends React.Component {
         {this.props.location.query.printable !== 'yes' &&
           <form>
             <div className="row form-horizontal">
-              <h1>Check-in between {this.props.review.employee_name} and supervisor {this.props.review.reviewer_name}</h1>
+              <h1>Check-in between {this.props.review.employee_name} <br /> and supervisor {this.props.review.reviewer_name}</h1>
               <Link className="pull-right" style={{ fontSize: '20px' }} onClick={this.handleOpenModal}>Printable Version</Link>
               <Modal
                 isOpen={this.state.modalIsOpen}

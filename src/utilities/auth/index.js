@@ -9,13 +9,29 @@ const authProviders = [
   //firebase.auth.EmailAuthProvider.PROVIDER_ID,
 ];
 
-const initializeFirebaseApp = (store) => {
-  firebase.initializeApp({
+let fconfig;
+const useNewFirebaseProject = false;
+
+if (useNewFirebaseProject) {
+  fconfig = {
+    apiKey: 'AIzaSyAnu_SrM4F1IEiyRCPFAM57ZdY8Hr2EQDA',
+    authDomain: 'coa-converse.firebaseapp.com',
+    databaseURL: 'https://coa-converse.firebaseio.com',
+    projectId: 'coa-converse',
+    storageBucket: 'coa-converse.appspot.com',
+    messagingSenderId: '305035449131',
+  };
+} else {
+  fconfig = {
     apiKey: 'AIzaSyAEwpGQsTfOhwxUXaLX43FNAPA7BfL4SQ0',
     authDomain: 'simplicityii-878be.firebaseapp.com',
     databaseURL: 'https://simplicityii-878be.firebaseio.com',
     storageBucket: 'simplicityii-878be.appspot.com',
-  });
+  };
+}
+
+const initializeFirebaseApp = (store) => {
+  firebase.initializeApp(fconfig);
 
   firebase.auth().onAuthStateChanged((user) => {
     if (user) {

@@ -11,10 +11,12 @@ const authProviders = [
 
 const initializeFirebaseApp = (store) => {
   firebase.initializeApp({
-    apiKey: 'AIzaSyAEwpGQsTfOhwxUXaLX43FNAPA7BfL4SQ0',
-    authDomain: 'simplicityii-878be.firebaseapp.com',
-    databaseURL: 'https://simplicityii-878be.firebaseio.com',
-    storageBucket: 'simplicityii-878be.appspot.com',
+    apiKey: 'AIzaSyAnu_SrM4F1IEiyRCPFAM57ZdY8Hr2EQDA',
+    authDomain: 'coa-converse.firebaseapp.com',
+    databaseURL: 'https://coa-converse.firebaseio.com',
+    projectId: 'coa-converse',
+    storageBucket: 'coa-converse.appspot.com',
+    messagingSenderId: '305035449131',
   });
 
   firebase.auth().onAuthStateChanged((user) => {

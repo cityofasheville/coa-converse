@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { withApollo } from 'react-apollo';
 
 import { loginLinkClicked } from './authActions';
 
@@ -12,7 +13,7 @@ const AuthControl = (props) => {
       <div>
         Logged in as <i>{displayName}</i>
         <br />
-        <a className="pull-right" onClick={(e) => { e.preventDefault(); props.user.logout(props.dispatch); }} role="button" >Sign out</a>
+        <a className="pull-right" onClick={(e) => { e.preventDefault(); props.user.logout(props.dispatch); props.client.resetStore(); }} role="button" >Sign out</a>
       </div>
     );
   }
@@ -41,4 +42,6 @@ const mapDispatchToProps = dispatch => (
   }
 );
 
-export default connect(mapStateToProps, mapDispatchToProps)(AuthControl);
+const AuthControlConnected = connect(mapStateToProps, mapDispatchToProps)(AuthControl);
+
+export default withApollo(AuthControlConnected);

@@ -15,9 +15,9 @@ const EmployeeHome = (props) => {
     return <p>{props.data.error.message}</p>; // eslint-disable-line react/prop-types
   }
 
-  const isSupervisor = () => {
-    return props.data.employee.employees.length > 0;
-  }
+  const isSupervisor = () => (
+    props.data.employee.employees.length > 0
+  );
 
   const refreshLocation = (value) => {
     let paramsString = ['?mode=', value].join('');
@@ -31,22 +31,22 @@ const EmployeeHome = (props) => {
     if (isSupervisor()) {
       if (props.location.query.mode) {
         if (props.location.query.mode === 'employees') {
-          return <Employees {...props} userId={props.data.employee.id} />
+          return <Employees {...props} userId={props.data.employee.id} />;
         }
-        return <Reviews {...props} />
+        return <Reviews {...props} />;
       }
       if (props.location.query.emp) {
-        return <Reviews {...props} />
+        return <Reviews {...props} />;
       }
-      return <Employees {...props} userId={props.data.employee.id} />
+      return <Employees {...props} userId={props.data.employee.id} />;
     }
-    return <Reviews {...props} />
-  }
+    return <Reviews {...props} />;
+  };
 
   return (
     <div className="row">
       <div className="col-sm-12">
-        {isSupervisor(props.user) && 
+        {isSupervisor(props.user) &&
           <RadioGroup name="modeRadio" selectedValue={props.location.query.mode || (props.location.query.emp ? 'check-ins' : 'employees')} onChange={refreshLocation}>
             <label>
               <Radio value="employees" />{props.location.query.emp ? [props.data.employee.name, '\'s'].join('') : 'My'} employees
@@ -75,9 +75,9 @@ const getEmployeeQuery = gql`
 `;
 
 export default graphql(getEmployeeQuery, {
-  options: (ownProps) => ({
+  options: ownProps => ({
     variables: {
       id: ownProps.location.query.emp,
-    }
-  })
+    },
+  }),
 })(EmployeeHome);

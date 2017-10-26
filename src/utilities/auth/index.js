@@ -10,7 +10,7 @@ const authProviders = [
 ];
 
 let fconfig;
-const useNewFirebaseProject = false;
+const useNewFirebaseProject = true;
 
 if (useNewFirebaseProject) {
   fconfig = {

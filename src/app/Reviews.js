@@ -90,7 +90,7 @@ const employeeShape = {
   employee_name: PropTypes.string,
   employees: PropTypes.arrayOf(PropTypes.shape(employeeShape)),
   reviews: PropTypes.arrayOf(PropTypes.shape(reviewShape)),
-}
+};
 
 Reviews.propTypes = {
   employee: PropTypes.shape(employeeShape), // eslint-disable-line
@@ -119,11 +119,11 @@ const getReviewsQuery = gql`
 `;
 
 const ReviewsGQL = graphql(getReviewsQuery, {
-  options: (ownProps)=> ({
+  options: ownProps => ({
     variables: {
       id: ownProps.location.query.emp,
-    }
-  })
+    },
+  }),
 })(Reviews);
 
 export default ReviewsGQL;

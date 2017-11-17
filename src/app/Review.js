@@ -125,6 +125,7 @@ class Review extends React.Component {
     }
     const newStatus = this.state.actionRadio === 'saveonly' ? this.props.review.status : this.state.actionRadio;
     this.props.submit({
+      employee_id: this.props.review.employee_id,
       id: this.props.review.id,
       reviewInput: {
         status: newStatus,
@@ -452,12 +453,37 @@ const submitReview = gql`
 
 export default graphql(submitReview, {
   props: ({ mutate }) => ({
-    submit: reviewData => mutate({ variables: { id: reviewData.id, reviewInput: reviewData.reviewInput } }).then(({ data }) => {
-      browserHistory.push(['/check-ins?emp', data.updateReview.employee_id].join('='));
-    }).catch((error) => {
-      document.getElementById('serverError').style.display = 'block';
-      scrollTo(document.body, 0, 100);
-      console.log('there was an error sending the query', error);
+    submit: reviewData => mutate({
+      variables: { id: reviewData.id, reviewInput: reviewData.reviewInput },
+      refetchQueries: [{
+        query: gql`
+          query getReviewsQuery($id: Int) {
+            employee (id: $id) {
+              name
+              id
+              supervisor_name
+              supervisor_id
+              last_reviewed
+              reviewable
+              reviews {
+                id
+                status
+                status_date
+                employee_id
+                periodStart
+                periodEnd
+                reviewer_name
+              }
+            }
+          }
+        `,
+        variables: { id: reviewData.employee_id },
+      }] }).then(({ data }) => {
+        browserHistory.push(['/check-ins?emp', data.updateReview.employee_id].join('='));
+      }).catch((error) => {
+        document.getElementById('serverError').style.display = 'block';
+        scrollTo(document.body, 0, 100);
+        console.log('there was an error sending the query', error);
     }),
   }),
 })(Review);

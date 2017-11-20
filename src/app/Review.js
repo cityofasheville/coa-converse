@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Modal from 'react-modal';
 import Collapsible from 'react-collapsible';
 import { Link, browserHistory } from 'react-router';
-import { graphql } from 'react-apollo';
+import { graphql, withApollo } from 'react-apollo';
 import gql from 'graphql-tag';
 import { Radio, RadioGroup } from 'react-radio-group';
 import moment from 'moment';
@@ -125,8 +125,8 @@ class Review extends React.Component {
     }
     const newStatus = this.state.actionRadio === 'saveonly' ? this.props.review.status : this.state.actionRadio;
     this.props.submit({
-      employee_id: this.props.review.employee_id,
       id: this.props.review.id,
+      apolloClient: this.props.client,
       reviewInput: {
         status: newStatus,
         periodEnd: this.state.periodEnd,
@@ -378,12 +378,12 @@ class Review extends React.Component {
         }
         {this.state.role === 'Supervisor' &&
           <div>
-            <Link style={{ fontSize: '20px' }} to={{ pathname: '/check-ins', query: { emp: this.props.review.employee_id } }}>Back to {this.props.review.employee_name}&apos;s check-ins<br /></Link>
-            <Link style={{ fontSize: '20px' }} to={{ pathname: '/', query: { mode: 'employees' } }}>Back to all my employee check-ins</Link>
+            <Link style={{ fontSize: '20px' }} to={{ pathname: '/', query: { emp: this.props.review.employee_id, mode: 'check-ins' } }}>Back to {this.props.review.employee_name}&apos;s check-ins<br /></Link>
+            <Link style={{ fontSize: '20px' }} to={{ pathname: '/', query: { mode: 'employees' } }}>Back to all my employees</Link>
           </div>
         }
         {this.state.role === 'Employee' &&
-          <Link style={{ fontSize: '20px' }} to={{ pathname: '/' }}>Back to my check-ins</Link>
+          <Link style={{ fontSize: '20px' }} to={{ pathname: '/', query: { mode: 'check-ins' } }}>Back to my check-ins</Link>
         }
       </div>
     );
@@ -451,39 +451,19 @@ const submitReview = gql`
   }
 `;
 
-export default graphql(submitReview, {
+const ReviewGraphQL = graphql(submitReview, {
   props: ({ mutate }) => ({
     submit: reviewData => mutate({
-      variables: { id: reviewData.id, reviewInput: reviewData.reviewInput },
-      refetchQueries: [{
-        query: gql`
-          query getReviewsQuery($id: Int) {
-            employee (id: $id) {
-              name
-              id
-              supervisor_name
-              supervisor_id
-              last_reviewed
-              reviewable
-              reviews {
-                id
-                status
-                status_date
-                employee_id
-                periodStart
-                periodEnd
-                reviewer_name
-              }
-            }
-          }
-        `,
-        variables: { id: reviewData.employee_id },
-      }] }).then(({ data }) => {
-        browserHistory.push(['/check-ins?emp', data.updateReview.employee_id].join('='));
-      }).catch((error) => {
-        document.getElementById('serverError').style.display = 'block';
-        scrollTo(document.body, 0, 100);
-        console.log('there was an error sending the query', error);
+      variables: { id: reviewData.id, reviewInput: reviewData.reviewInput }
+    }).then(({ data }) => {
+      reviewData.apolloClient.resetStore();
+      browserHistory.push(['/?emp=', data.updateReview.employee_id, '&mode=check-ins'].join(''));
+    }).catch((error) => {
+      document.getElementById('serverError').style.display = 'block';
+      scrollTo(document.body, 0, 100);
+      console.log('there was an error sending the query', error);
     }),
   }),
 })(Review);
+
+export default withApollo(ReviewGraphQL);

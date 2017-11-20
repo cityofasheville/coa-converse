@@ -65,15 +65,15 @@ const ReviewContainerGQL = compose(
       variables: {
         id: ownProps.location.query['check-in'] || -1,
         employee_id: ownProps.location.query.emp,
-      }
+      },
     })
   }),
   graphql(getLastReviewedQuery, { name: 'lastReviewed',
-    options: (ownProps) => ({
+    options: ownProps => ({
       variables: {
         id: ownProps.location.query.emp,
-      }
-     })
+      },
+    }),
   }),
 )(ReviewContainer);
 

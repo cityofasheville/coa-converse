@@ -1,7 +1,8 @@
 import React from 'react';
 import { IndexLink, Link } from 'react-router';
+import { connect } from 'react-redux';
 import Icon from '../shared/Icon';
-import { IM_SEARCH } from '../shared/iconConstants';
+import { IM_PENCIL7 } from '../shared/iconConstants';
 import AuthControl from '../utilities/auth/authControl';
 
 export const Navbar = (props) => (
@@ -23,10 +24,27 @@ export const Navbar = (props) => (
         </div>
         <div className="pull-right" style={{ paddingTop: '15px' }}>
           <AuthControl />
+          {props.user.loggedIn &&
+            <div style={{ clear: 'both' }}>
+              <a href="https://goo.gl/forms/iM81K4CIW3ZC1LM22" target="_blank" style={{ float: 'right', color: '#bf1bbf', fontStyle: 'italic', fontSize: '16px' }}><Icon path={IM_PENCIL7} size={18} />Give feedback</a>
+            </div>
+          }
         </div>
       </div>
     </nav>
   </div>
 );
 
-export default Navbar;
+const mapStateToProps = state => (
+  {
+    user: state.auth.user,
+  }
+);
+
+const mapDispatchToProps = dispatch => (
+  {
+    dispatch,
+  }
+);
+
+export default connect(mapStateToProps, mapDispatchToProps)(Navbar);

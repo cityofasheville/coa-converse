@@ -16,7 +16,14 @@ class RichTextEditor extends React.Component {
       content={this.props.content}
       config={{
         plugins: 'link image code',
-        toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | indent outdent | code',
+        toolbar: 'undo redo  | bold italic underline strikethrough| alignleft aligncenter alignright | indent outdent | code',
+        menubar: 'edit insert format',
+        menu: {
+          edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall'},
+          format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | formats | removeformat'},
+          insert: {title: 'Insert', items: 'link'},
+          tools: {title: 'Tools', items: 'spellchecker code'}
+        },
         branding: false,
         readonly: !this.props.editable,
         content_style: !this.props.editable ? "body { background-color: rgb(248, 248, 248) !important; }* { cursor: not-allowed }" : (this.props.invalid ? ".mce-content-body { background-color: #ffe2e2 !important }": "body { background: #fff }"),

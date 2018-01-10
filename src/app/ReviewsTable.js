@@ -105,7 +105,7 @@ const ReviewsTable = props => {
         {reviews.length === 0 &&
           <div className="alert alert-warning">
             <span className="alert-text">{props.current ? 'No current check-in found' : 'No past check-ins found'}</span>
-            {props.current && (props.supervisorId === loggedInEmpId) &&
+            {props.current && props.reviewable && (props.supervisorId === loggedInEmpId) &&
               <Link to={{ pathname: 'check-in', query: { emp: props.emp } }}><div className="btn btn-primary btn-sm" style={{ marginLeft: '10px' }}>Begin a check-in</div></Link>
             }
           </div>

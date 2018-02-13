@@ -6,6 +6,7 @@ import { Link } from 'react-router';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import LoadingAnimation from '../shared/LoadingAnimation';
+import Error from '../shared/Error';
 import Icon from '../shared/Icon';
 import { IM_WARNING2, IM_HOURGLASS } from '../shared/iconConstants';
 
@@ -88,7 +89,7 @@ const ReviewsTable = props => {
     return <LoadingAnimation />;
   }
   if (props.data.error) { // eslint-disable-line react/prop-types
-    return <p>{props.data.error.message}</p>; // eslint-disable-line react/prop-types
+    return <Error message={props.data.error.message} />; // eslint-disable-line react/prop-types
   }
 
   const reviews = props.reviews === null ? [] : props.reviews;

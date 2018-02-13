@@ -217,7 +217,12 @@ class Review extends React.Component {
               <div className="col-sm-12">
                 <div className="form-group" id="serverError" hidden>
                   <div className="alert alert-danger alert-sm">
-                    There was an error processing your submission. Please contact <a href="mailto:Helpdesk@ashevillenc.gov" target="_blank" style={{ color: '#fff', textDecoration: 'underline' }}>help desk</a> and inform them of the time and date you tried to submit the form.
+                    <p>
+                      There was an error processing your submission. Please contact <a href="mailto:Helpdesk@ashevillenc.gov" target="_blank" style={{ color: '#fff', textDecoration: 'underline' }}>help desk</a> and inform them of the time and date you tried to submit the form.
+                    </p>
+                    <p id="errorDetails">
+                      ERROR
+                    </p>
                   </div>
                 </div>
                 <div className="form-group">
@@ -459,6 +464,7 @@ const ReviewGraphQL = graphql(submitReview, {
       reviewData.apolloClient.resetStore();
       browserHistory.push(['/?emp=', data.updateReview.employee_id, '&mode=check-ins'].join(''));
     }).catch((error) => {
+      document.getElementById('errorDetails').innerHTML = '<span>Error details: </span>' + error;
       document.getElementById('serverError').style.display = 'block';
       scrollTo(document.body, 0, 100);
       console.log('there was an error sending the query', error);

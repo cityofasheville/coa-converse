@@ -1,9 +1,10 @@
 import ApolloClient, { createNetworkInterface } from 'apollo-client';
 import firebase from 'firebase';
 
-const SERVER_URL = 'https://coa-converse-api.ashevillenc.gov/graphql';
-// const SERVER_URL = 'http://localhost:8080/graphql';
-//const SERVER_URL = 'http://72.250.240.49/graphql';
+let SERVER_URL = 'https://coa-converse-api.ashevillenc.gov/graphql';
+if (process.env.USE_LOCAL_API === 'true') {
+  SERVER_URL = 'http://localhost:8080/graphql';
+}
 
 const networkInterface = createNetworkInterface({ uri: SERVER_URL });
 

@@ -461,7 +461,7 @@ const ReviewGraphQL = graphql(submitReview, {
     submit: reviewData => mutate({
       variables: { id: reviewData.id, reviewInput: reviewData.reviewInput }
     }).then(({ data }) => {
-      reviewData.apolloClient.resetStore();
+      //reviewData.apolloClient.resetStore();
       browserHistory.push(['/?emp=', data.updateReview.employee_id, '&mode=check-ins'].join(''));
     }).catch((error) => {
       document.getElementById('errorDetails').innerHTML = '<span>Error details: </span>' + error;

@@ -1,13 +1,25 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import { graphql, compose } from 'react-apollo';
 import EmployeeHome from './EmployeeHome';
-import { loginLinkClicked } from '../utilities/auth/authActions';
+import { updateAuthModal } from '../utilities/auth/graphql/authMutations';
+import { getUser } from '../utilities/auth/graphql/authQueries';
 
 const Homepage = (props) => {
   if (!props.user.loggedIn) {
     return (
       <div>
-        Welcome to City of Asheville Employee Check-in. Please <a href="#" onClick={(e) => { e.preventDefault(); props.dispatch(loginLinkClicked()); }} className="">log in</a>.
+        Welcome to City of Asheville Employee Check-in. Please&nbsp;
+        <a
+          href="#" onClick={(e) => {
+            e.preventDefault();
+            props.updateAuthModal({
+              variables: {
+                open: true,
+              },
+            });
+          }}
+          className=""
+        >log in</a>.
       </div>
     );
   }
@@ -17,16 +29,11 @@ const Homepage = (props) => {
   return (<EmployeeHome {...props} />);
 };
 
-const mapStateToProps = state => (
-  {
-    user: state.auth.user,
-  }
-);
-
-const mapDispatchToProps = dispatch => (
-  {
-    dispatch,
-  }
-);
-
-export default connect(mapStateToProps, mapDispatchToProps)(Homepage);
+export default compose(
+  graphql(updateAuthModal, { name: 'updateAuthModal' }),
+  graphql(getUser, {
+    props: ({ data: { user } }) => ({
+      user,
+    }),
+  })
+)(Homepage);

@@ -1,11 +1,12 @@
 import React from 'react';
-import { IndexLink, Link } from 'react-router';
-import { connect } from 'react-redux';
+import { IndexLink } from 'react-router';
+import { graphql, compose } from 'react-apollo';
 import Icon from '../shared/Icon';
 import { IM_PENCIL7 } from '../shared/iconConstants';
 import AuthControl from '../utilities/auth/authControl';
+import { getUser } from '../utilities/auth/graphql/authQueries';
 
-export const Navbar = (props) => (
+export const Navbar = props => (
   <div>
     <nav className="navbar navbar-default" style={{ backgroundColor: '#f6fcff'}}>
       <div className="container-fluid">
@@ -35,16 +36,10 @@ export const Navbar = (props) => (
   </div>
 );
 
-const mapStateToProps = state => (
-  {
-    user: state.auth.user,
-  }
-);
-
-const mapDispatchToProps = dispatch => (
-  {
-    dispatch,
-  }
-);
-
-export default connect(mapStateToProps, mapDispatchToProps)(Navbar);
+export default compose(
+  graphql(getUser, {
+    props: ({ data: { user } }) => ({
+      user,
+    }),
+  })
+)(Navbar);

@@ -35,8 +35,7 @@ const PrintableReview = props => (
             <div className="col-sm-12" style={{ marginBottom: '10px' }}>
               <label htmlFor="startDate" className="col-sm-4" style={{ textAlign: 'right' }}>Previous check-in completed: </label>
               <div className="col-sm-8">
-                {console.log('test', props.lastReviewed)}
-                <span>{!(props.review.status === 'Closed' ? props.review.periodStart : props.lastReviewed) ? 'Never' : moment.utc(props.review.periodStart).format('M/DD/YYYY')} </span>
+                <span>{!(props.review.status === 'Closed' ? props.review.previousReviewDate : props.lastReviewed) ? 'Never' : moment.utc(props.review.periodStart).format('M/DD/YYYY')} </span>
               </div>
             </div>
             <div className="col-sm-12">
@@ -106,6 +105,7 @@ const reviewShape = {
   supervisor_id: PropTypes.number,
   employee_id: PropTypes.number,
   position: PropTypes.string,
+  previousReviewDate: PropTypes.string,
   periodStart: PropTypes.string,
   periodEnd: PropTypes.string,
   reviewer_name: PropTypes.string,

@@ -80,7 +80,7 @@ class Review extends React.Component {
     const initialErrors = validate({ periodEnd: this.props.review.periodEnd, questions: [], responses: [] });
     const role = this.props.review.employee_id === this.props.userId ? 'Employee' : 'Supervisor';
     this.state = {
-      periodStart: this.props.review.status === 'Closed' ? this.props.review.periodStart : this.props.lastReviewed,
+      periodStart: this.props.review.status === 'Closed' ? this.props.review.previousReviewDate : this.props.lastReviewed,
       periodEnd: this.props.review.periodEnd,
       questions: this.props.review.questions,
       responses: this.props.review.responses,
@@ -231,7 +231,7 @@ class Review extends React.Component {
                     <div className="col-sm-12" style={{ marginBottom: '10px' }}>
                       <label htmlFor="startDate" className="col-sm-4" style={{ textAlign: 'right' }}>Previous check-in completed: </label>
                       <div className={dateErrors.startDate ? 'col-sm-8 invalid' : 'col-xs-8'}>
-                        <span>{!this.state.periodStart ? 'Never' : moment.utc(this.state.periodStart).format('M/DD/YYYY')}</span>
+                        <span>{(!this.state.periodStart || moment.utc(this.state.periodStart).format('M/DD/YYYY') === '1/01/1970') ? 'Never' : moment.utc(this.state.periodStart).format('M/DD/YYYY')}</span>
                       </div>
                     </div>
                     <div className={dateErrors.endDate ? 'col-sm-12 invalid' : 'col-sm-12'}>

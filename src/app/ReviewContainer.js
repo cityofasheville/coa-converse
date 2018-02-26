@@ -31,6 +31,7 @@ const getReviewQuery = gql`
       supervisor_id
       employee_id
       position
+      previousReviewDate
       periodStart
       periodEnd
       reviewer_name

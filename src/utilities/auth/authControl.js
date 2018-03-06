@@ -1,9 +1,10 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { withApollo } from 'react-apollo';
 
-import { loginLinkClicked } from './authActions';
+import React from 'react';
+import firebase from 'firebase';
+import { graphql, compose, withApollo } from 'react-apollo';
+import { getUser, getModalOpen } from './graphql/authQueries';
+import { updateUser, updateAuthModal } from './graphql/authMutations';
+import { defaultAuthState } from './graphql/authDefaultState';
 
 const AuthControl = (props) => {
   const displayName = (props.user.name) ? props.user.name : props.user.email;
@@ -13,35 +14,65 @@ const AuthControl = (props) => {
       <div>
         Logged in as <i>{displayName}</i>
         <br />
-        <a className="pull-right" onClick={(e) => { e.preventDefault(); props.user.logout(props.dispatch); props.client.resetStore(); }} role="button" >Sign out</a>
+        <a
+          className="pull-right"
+          onClick={(e) => {
+            e.preventDefault();
+            firebase.auth().signOut()
+            .then(() => {
+              const defaultUser = defaultAuthState.user;
+              props.updateUser({
+                variables: {
+                  loggedIn: defaultUser.loggedIn,
+                  privilege: defaultUser.privilege,
+                  name: defaultUser.name,
+                  email: defaultUser.email,
+                  provider: defaultUser.provider,
+                },
+              });
+            }, (error) => {
+              console.log(error);
+            });
+          }}
+          role="button"
+        >Sign out</a>
       </div>
     );
   }
 
   return (
     <div>
-      <a href="#" onClick={(e) => { e.preventDefault(); props.dispatch(loginLinkClicked()); }} className="">Log in</a>
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          props.updateAuthModal({
+            variables: {
+              open: !props.modalOpen,
+            },
+          });
+        }}
+        className=""
+      >
+        Log In
+      </a>
     </div>
   );
 };
 
-AuthControl.propTypes = {
-  dispatch: PropTypes.func,
-  user: PropTypes.object,
-};
+const AuthControlComposed = compose(
+  graphql(updateAuthModal, { name: 'updateAuthModal' }),
+  graphql(updateUser, { name: 'updateUser' }),
+  graphql(getModalOpen, {
+    props: ({ data: { modal } }) => ({
+      modalOpen: modal.open,
+    }),
+  }),
+  graphql(getUser, {
+    props: ({ data: { user } }) => ({
+      user,
+    }),
+  })
+)(AuthControl);
 
-const mapStateToProps = state => (
-  {
-    user: state.auth.user,
-  }
-);
-
-const mapDispatchToProps = dispatch => (
-  {
-    dispatch,
-  }
-);
-
-const AuthControlConnected = connect(mapStateToProps, mapDispatchToProps)(AuthControl);
-
-export default withApollo(AuthControlConnected);
+export default withApollo(AuthControlComposed);

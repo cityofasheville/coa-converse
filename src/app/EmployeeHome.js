@@ -6,13 +6,14 @@ import { RadioGroup, Radio } from 'react-radio-group';
 import Reviews from './Reviews';
 import Employees from './Employees';
 import LoadingAnimation from '../shared/LoadingAnimation';
+import Error from '../shared/Error';
 
 const EmployeeHome = (props) => {
   if (props.data.loading) { // eslint-disable-line react/prop-types
     return <LoadingAnimation />;
   }
   if (props.data.error) { // eslint-disable-line react/prop-types
-    return <p>{props.data.error.message}</p>; // eslint-disable-line react/prop-types
+    return <Error message={props.data.error.message} />; // eslint-disable-line react/prop-types
   }
 
   const isSupervisor = () => (

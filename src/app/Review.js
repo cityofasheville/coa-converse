@@ -80,7 +80,7 @@ class Review extends React.Component {
     const initialErrors = validate({ periodEnd: this.props.review.periodEnd, questions: [], responses: [] });
     const role = this.props.review.employee_id === this.props.userId ? 'Employee' : 'Supervisor';
     this.state = {
-      periodStart: this.props.review.status === 'Closed' ? this.props.review.periodStart : this.props.lastReviewed,
+      periodStart: this.props.review.status === 'Closed' ? this.props.review.previousReviewDate : this.props.lastReviewed,
       periodEnd: this.props.review.periodEnd,
       questions: this.props.review.questions,
       responses: this.props.review.responses,
@@ -217,7 +217,12 @@ class Review extends React.Component {
               <div className="col-sm-12">
                 <div className="form-group" id="serverError" hidden>
                   <div className="alert alert-danger alert-sm">
-                    There was an error processing your submission. Please contact <a href="mailto:Helpdesk@ashevillenc.gov" target="_blank" style={{ color: '#fff', textDecoration: 'underline' }}>help desk</a> and inform them of the time and date you tried to submit the form.
+                    <p>
+                      There was an error processing your submission. Please contact <a href="mailto:Helpdesk@ashevillenc.gov" target="_blank" style={{ color: '#fff', textDecoration: 'underline' }}>help desk</a> and inform them of the time and date you tried to submit the form.
+                    </p>
+                    <p id="errorDetails">
+                      ERROR
+                    </p>
                   </div>
                 </div>
                 <div className="form-group">
@@ -226,7 +231,7 @@ class Review extends React.Component {
                     <div className="col-sm-12" style={{ marginBottom: '10px' }}>
                       <label htmlFor="startDate" className="col-sm-4" style={{ textAlign: 'right' }}>Previous check-in completed: </label>
                       <div className={dateErrors.startDate ? 'col-sm-8 invalid' : 'col-xs-8'}>
-                        <span>{!this.state.periodStart ? 'Never' : moment.utc(this.state.periodStart).format('M/DD/YYYY')}</span>
+                        <span>{(!this.state.periodStart || moment.utc(this.state.periodStart).format('M/DD/YYYY') === '1/01/1970') ? 'Never' : moment.utc(this.state.periodStart).format('M/DD/YYYY')}</span>
                       </div>
                     </div>
                     <div className={dateErrors.endDate ? 'col-sm-12 invalid' : 'col-sm-12'}>
@@ -456,9 +461,10 @@ const ReviewGraphQL = graphql(submitReview, {
     submit: reviewData => mutate({
       variables: { id: reviewData.id, reviewInput: reviewData.reviewInput }
     }).then(({ data }) => {
-      reviewData.apolloClient.resetStore();
+      //reviewData.apolloClient.resetStore();
       browserHistory.push(['/?emp=', data.updateReview.employee_id, '&mode=check-ins'].join(''));
     }).catch((error) => {
+      document.getElementById('errorDetails').innerHTML = '<span>Error details: </span>' + error;
       document.getElementById('serverError').style.display = 'block';
       scrollTo(document.body, 0, 100);
       console.log('there was an error sending the query', error);

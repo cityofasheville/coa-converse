@@ -45,6 +45,7 @@ const EmployeesGQL = graphql(getEmployeesQuery, {
     variables: {
       id: ownProps.userId,
     },
+    fetchPolicy: 'network-only',
   }),
 })(Employees);
 

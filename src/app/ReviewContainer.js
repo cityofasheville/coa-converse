@@ -67,6 +67,7 @@ const ReviewContainerGQL = compose(
         id: ownProps.location.query['check-in'] || -1,
         employee_id: ownProps.location.query.emp,
       },
+      fetchPolicy: 'network-only',
     }),
   }),
   graphql(getLastReviewedQuery, { name: 'lastReviewed',

@@ -123,6 +123,7 @@ const ReviewsGQL = graphql(getReviewsQuery, {
     variables: {
       id: ownProps.location.query.emp,
     },
+    fetchPolicy: 'network-only',
   }),
 })(Reviews);
 

@@ -9,10 +9,11 @@ const ReviewContainer = (props) => {
   if (props.reviewQuery.loading || props.lastReviewed.loading) { // eslint-disable-line react/prop-types
     return <LoadingAnimation />;
   }
-  if (props.reviewQuery.error || props.lastReviewed.error) { // eslint-disable-line react/prop-types
-    let msg = props.reviewQuery.error ? props.reviewQuery.error.message : '';
-    msg = msg + props.lastReviewed.error ? props.lastReviewed.error.message : '';
-    return <Error message={msg} /> // eslint-disable-line react/prop-types
+  if (props.reviewQuery.error) {
+    return <Error message={props.reviewQuery.error.message} />;
+  }
+  if (props.lastReviewed.error) { // eslint-disable-line react/prop-types
+    return <Error message={props.lastReviewed.error.message} /> // eslint-disable-line react/prop-types
   }
   return (
     <Review review={props.reviewQuery.review} userId={props.reviewQuery.employee.id} printable={props.location.query.printable === 'yes'} lastReviewed={props.lastReviewed.employee.last_reviewed} location={props.location} />

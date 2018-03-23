@@ -31,6 +31,15 @@ const getMainReviewResponse = (responses) => {
   return null;
 };
 
+const showSaveSuccess = (id) => {
+  document.getElementById(id).style.display = 'block';
+  //document.querySelectorAll("*[data-type='saveSuccess']").forEach((item) => { item.style.display = 'block' });
+  setTimeout(() => {
+    //document.querySelectorAll("*[data-type='saveSuccess']").forEach((item) => { item.style.display = 'none' });
+    document.getElementById(id).style.display = 'none';
+  }, 3000);
+};
+
 const validate = (state, onSubmit) => {
   let invalidQuestions = [];
   const answeredQuestions = [];
@@ -74,6 +83,8 @@ const changesPresent = (state, original) => {
   return false;
 };
 
+//let autoSaveInterval;
+
 class Review extends React.Component {
   constructor(props) {
     super(props);
@@ -87,7 +98,7 @@ class Review extends React.Component {
       role: this.props.review.employee_id === this.props.userId ? 'Employee' : (this.props.userId === this.props.review.supervisor_id ? 'Supervisor' : 'Viewer'),
       answersEditable: this.props.review.status === 'Open' && role === 'Supervisor' ? true : false,
       responsesEditable: this.props.review.status === 'Ready' && role === 'Employee',
-      actionRadio: 'saveonly', // todo set appropriate action value based on other vars,
+      actionRadio: 'saveprogress', // todo set appropriate action value based on other vars,
       validationErrors: initialErrors,
       formError: initialErrors.startDate || initialErrors.endDate || initialErrors.questions.length > 0 || initialErrors.responses.length > 0,
       modalIsOpen: false,
@@ -99,6 +110,17 @@ class Review extends React.Component {
     this.handleCloseModal = this.handleCloseModal.bind(this);
     this.handleModalContinue = this.handleModalContinue.bind(this);
   }
+
+  // componentDidMount() {
+  //   if (this.state.answersEditable || this.state.responsesEditable) {
+  //     //autoSaveInterval = setInterval(() => this.handleSubmit(true), 30000);
+  //     setTimeout(() => showReminder(), 10000);
+  //   }
+  // }
+
+  //componentWillUnmount() {
+    //clearInterval(autoSaveInterval);
+  //}
 
   handleOpenModal() {
     if (changesPresent(this.state, this.props.review)) {
@@ -119,11 +141,22 @@ class Review extends React.Component {
     this.setState({ modalIsOpen: false });
   }
 
-  handleSubmit(event) {
-    if (this.state.actionRadio !== 'saveonly' && this.hasErrors()) {
-      return;
+  handleSubmit(auto) {
+    let stayOnPage = this.state.actionRadio === 'saveprogress';
+    let successId = 'saveSuccess2';
+    if (auto === true) {
+      stayOnPage = true;
+      successId = 'saveSuccess1';
     }
-    const newStatus = this.state.actionRadio === 'saveonly' ? this.props.review.status : this.state.actionRadio;
+    let newStatus = this.props.review.status;
+    if (auto !== true) {
+      if (this.state.actionRadio !== 'saveonly' && this.state.actionRadio !== 'saveprogress' && this.hasErrors()) {
+        return;
+      }
+      if (this.state.actionRadio !== 'saveonly' && this.state.actionRadio !== 'saveprogress') {
+        newStatus = this.state.actionRadio;
+      }
+    }
     this.props.submit({
       id: this.props.review.id,
       apolloClient: this.props.client,
@@ -139,7 +172,7 @@ class Review extends React.Component {
           Response: response.Response,
         })),
       },
-    });
+    }, stayOnPage, successId);
   }
 
   handleEndDateChange(value) {
@@ -147,14 +180,22 @@ class Review extends React.Component {
   }
 
   handleTextEditorChange(event) {
-    const splitId = event.target.id.split('-'); 
+    let splitId;
+    let content;
+    if (event.type === 'blur') {
+      splitId = event.target.id.split('-');
+      content = event.target.getContent();
+    } else {
+      splitId = event.target.getAttribute('data-id').split('-');
+      content = event.target.innerHTML;
+    }
     const questionOrResponse = splitId[0];
     const id = splitId[1] === '' ? null : splitId[1];
     if (questionOrResponse === 'response') {
       const newResponses = [];
       for (let i = 0; i < this.state.responses.length; i += 1) {
         if (id == this.state.responses[i].question_id) {
-          newResponses.push(Object.assign({}, this.state.responses[i], {Response: event.target.getContent() }));
+          newResponses.push(Object.assign({}, this.state.responses[i], { Response: content }));
         } else {
           newResponses.push(Object.assign({}, this.state.responses[i]));
         }
@@ -164,7 +205,7 @@ class Review extends React.Component {
       const newQuestions = [];
       for (let i = 0; i < this.state.questions.length; i += 1) {
         if (id == this.state.questions[i].id) {
-          newQuestions.push(Object.assign({}, this.state.questions[i], {answer: event.target.getContent() }));
+          newQuestions.push(Object.assign({}, this.state.questions[i], { answer: content }));
         } else {
           newQuestions.push(Object.assign({}, this.state.questions[i]));
         }
@@ -223,6 +264,25 @@ class Review extends React.Component {
                     <p id="errorDetails">
                       ERROR
                     </p>
+                  </div>
+                </div>
+                <div className="form-group" hidden={!(this.state.answersEditable || this.state.responsesEditable)} style={{ position: 'fixed', bottom: '2%', right: '5%', zIndex: '1' }}>
+                  <div className="alert alert-info alert-xs" style={{ paddingBottom: '20px', paddingLeft: '5px' }}>
+                    <span className="alert alert-info alert-xs" style={{ padding: '3px' }} data-type="saveSuccess" id="saveSuccess1" hidden>
+                      Progress successfully saved.
+                    </span>
+                    <button className="btn btn-primary btn-xs pull-right" style={{ position: 'relative', top: '-10px', right: '-10px' }} type="button" id="plus" onClick={() => { document.getElementById('autosaveWarningText').classList.toggle('show'); document.getElementById('plus').classList.toggle('hidden'); document.getElementById('minus').classList.toggle('hidden'); }}>
+                      +
+                    </button>
+                    <button className="btn btn-primary btn-xs hidden pull-right" type="button" id="minus" style={{ position: 'relative', top: '-10px', right: '-10px' }} onClick={() => { document.getElementById('autosaveWarningText').classList.toggle('show'); document.getElementById('minus').classList.toggle('hidden'); document.getElementById('plus').classList.toggle('hidden'); }}>
+                      -
+                    </button>
+                    <input type="button" value="Save your work" className="btn btn-primary btn-xs pull-right" onClick={() => this.handleSubmit(true)} style={{ position: 'relative', top: '-10px', right: '-2px', marginBottom: '3px' }} ></input>
+                    <div className="collapse" id="autosaveWarningText">
+                      <div className="card card-body">
+                        Autosave has not yet been implemented.<br /> Remember to save your progress frequently.
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="form-group">
@@ -310,12 +370,20 @@ class Review extends React.Component {
                             onChange={val => (this.setState({ actionRadio: val }))}
                           >
                             <label>
-                              <Radio value="saveonly" />Save only
+                              <Radio value="saveprogress" />Save progress
+                            </label>
+                            <label>
+                              <Radio value="saveonly" />Save &amp; exit
                             </label>
                             <label>
                               <Radio value="Ready" />Submit for employee acknowledgement
                             </label>
                           </RadioGroup>
+                          <div className="alert alert-success alert-sm" data-type="saveSuccess" id="saveSuccess2" hidden>
+                            <p>
+                              Your progress was saved.
+                            </p>
+                          </div>
                           <input type="button" className="btn btn-primary" value="Save" onClick={this.handleSubmit} />
                           <span hidden={!this.state.formError} style={{ color: 'red', marginLeft: '5px' }}>Required fields are missing. You must supply a Date of check-in and fill in at least one section before you can submit this check-in for employee acknowledgement.</span>
                         </div>
@@ -351,7 +419,10 @@ class Review extends React.Component {
                             onChange={val => (this.setState({ actionRadio: val }))}
                           >
                             <label>
-                              <Radio value="saveonly" />Save only
+                              <Radio value="saveprogress" />Save progress
+                            </label>
+                            <label>
+                              <Radio value="saveonly" />Save &amp; exit
                             </label>
                             <label>
                               <Radio value="Acknowledged" />Acknowledge
@@ -458,16 +529,18 @@ const submitReview = gql`
 
 const ReviewGraphQL = graphql(submitReview, {
   props: ({ mutate }) => ({
-    submit: reviewData => mutate({
-      variables: { id: reviewData.id, reviewInput: reviewData.reviewInput }
+    submit: (reviewData, auto, saveId) => mutate({
+      variables: { id: reviewData.id, reviewInput: reviewData.reviewInput },
     }).then(({ data }) => {
-      //reviewData.apolloClient.resetStore();
-      browserHistory.push(['/?emp=', data.updateReview.employee_id, '&mode=check-ins'].join(''));
+      if (auto !== true) {
+        browserHistory.push(['/?emp=', data.updateReview.employee_id, '&mode=check-ins'].join(''));
+      } else {
+        showSaveSuccess(saveId);
+      }
     }).catch((error) => {
       document.getElementById('errorDetails').innerHTML = '<span>Error details: </span>' + error;
       document.getElementById('serverError').style.display = 'block';
       scrollTo(document.body, 0, 100);
-      console.log('there was an error sending the query', error);
     }),
   }),
 })(Review);

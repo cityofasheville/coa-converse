@@ -74,6 +74,8 @@ const changesPresent = (state, original) => {
   return false;
 };
 
+let autoSaveInterval;
+
 class Review extends React.Component {
   constructor(props) {
     super(props);
@@ -100,6 +102,16 @@ class Review extends React.Component {
     this.handleModalContinue = this.handleModalContinue.bind(this);
   }
 
+  componentDidMount() {
+    if (this.state.answersEditable || this.state.responsesEditable) {
+      autoSaveInterval = setInterval(() => this.handleSubmit(true), 30000);
+    }
+  }
+
+  componentWillUnmount() {
+    clearInterval(autoSaveInterval);
+  }
+
   handleOpenModal() {
     if (changesPresent(this.state, this.props.review)) {
       this.setState({ modalIsOpen: true });
@@ -119,11 +131,16 @@ class Review extends React.Component {
     this.setState({ modalIsOpen: false });
   }
 
-  handleSubmit(event) {
-    if (this.state.actionRadio !== 'saveonly' && this.hasErrors()) {
-      return;
+  handleSubmit(auto) {
+    let newStatus = this.props.review.status;
+    if (auto !== true) {
+      if (this.state.actionRadio !== 'saveonly' && this.hasErrors()) {
+        return;
+      }
+      if (this.state.actionRadio !== 'saveonly') {
+        newStatus = this.state.actionRadio;
+      }
     }
-    const newStatus = this.state.actionRadio === 'saveonly' ? this.props.review.status : this.state.actionRadio;
     this.props.submit({
       id: this.props.review.id,
       apolloClient: this.props.client,
@@ -139,7 +156,7 @@ class Review extends React.Component {
           Response: response.Response,
         })),
       },
-    });
+    }, auto);
   }
 
   handleEndDateChange(value) {
@@ -147,14 +164,22 @@ class Review extends React.Component {
   }
 
   handleTextEditorChange(event) {
-    const splitId = event.target.id.split('-'); 
+    let splitId;
+    let content;
+    if (event.type === 'blur') {
+      splitId = event.target.id.split('-');
+      content = event.target.getContent();
+    } else {
+      splitId = event.target.getAttribute('data-id').split('-');
+      content = event.target.innerHTML;
+    }
     const questionOrResponse = splitId[0];
     const id = splitId[1] === '' ? null : splitId[1];
     if (questionOrResponse === 'response') {
       const newResponses = [];
       for (let i = 0; i < this.state.responses.length; i += 1) {
         if (id == this.state.responses[i].question_id) {
-          newResponses.push(Object.assign({}, this.state.responses[i], {Response: event.target.getContent() }));
+          newResponses.push(Object.assign({}, this.state.responses[i], { Response: content }));
         } else {
           newResponses.push(Object.assign({}, this.state.responses[i]));
         }
@@ -164,7 +189,7 @@ class Review extends React.Component {
       const newQuestions = [];
       for (let i = 0; i < this.state.questions.length; i += 1) {
         if (id == this.state.questions[i].id) {
-          newQuestions.push(Object.assign({}, this.state.questions[i], {answer: event.target.getContent() }));
+          newQuestions.push(Object.assign({}, this.state.questions[i], { answer: content }));
         } else {
           newQuestions.push(Object.assign({}, this.state.questions[i]));
         }
@@ -458,11 +483,12 @@ const submitReview = gql`
 
 const ReviewGraphQL = graphql(submitReview, {
   props: ({ mutate }) => ({
-    submit: reviewData => mutate({
-      variables: { id: reviewData.id, reviewInput: reviewData.reviewInput }
+    submit: (reviewData, auto) => mutate({
+      variables: { id: reviewData.id, reviewInput: reviewData.reviewInput },
     }).then(({ data }) => {
-      //reviewData.apolloClient.resetStore();
-      browserHistory.push(['/?emp=', data.updateReview.employee_id, '&mode=check-ins'].join(''));
+      if (auto !== true) {
+        browserHistory.push(['/?emp=', data.updateReview.employee_id, '&mode=check-ins'].join(''));
+      }
     }).catch((error) => {
       document.getElementById('errorDetails').innerHTML = '<span>Error details: </span>' + error;
       document.getElementById('serverError').style.display = 'block';

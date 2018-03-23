@@ -5,14 +5,24 @@ import PropTypes from 'prop-types';
 //https://github.com/instructure-react/react-tinymce/issues/35
 
 class RichTextEditor extends React.Component {
+  constructor(props) {
+    super(props);
+    this.handleEditorChange = this.handleEditorChange.bind(this);
+  }
+
   componentDidMount() {
     this.textAreaElement = document.getElementById(this.props.id);
     this.textAreaElement.name = this.props.id;
   }
 
+  handleEditorChange(e) {
+    this.props.onChange(e);
+  }
+
   render() {
     return <TinyMCE
       id={this.props.id}
+      key={this.props.content}
       content={this.props.content}
       config={{
         plugins: 'link image code',
@@ -30,8 +40,9 @@ class RichTextEditor extends React.Component {
         browser_spellcheck: true,
         height: 250,
       }}
-      onBlur={this.props.onChange}
-    />
+      onKeyup={this.handleEditorChange}
+      onBlur={this.handleEditorChange}
+    />;
   }
 }
 

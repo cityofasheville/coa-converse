@@ -342,7 +342,7 @@ class Review extends React.Component {
                 <div className="form-group">
                   {
                     this.props.review.questions.map((question, index) => {
-                      const resp = getResponse(question.id, this.state.responses);
+                      const resp = getResponse(question.id, this.props.review.responses);
                       return (
                         <div key={['question', index].join('_')}>
                           <Question question={question} editable={this.state.answersEditable} onBlur={question.type === 'Text' ? (event => (this.handleTextEditorChange(event))) : (value => (this.handleRadioQuestionChange(value, question.id)))} />
@@ -355,7 +355,7 @@ class Review extends React.Component {
                   }
                 </div>
                 <div className="form-group">
-                  <Response response={getMainReviewResponse(this.state.responses)} standalone editable={this.state.responsesEditable} onChange={event => (this.handleTextEditorChange(event))} />
+                  <Response response={getMainReviewResponse(this.props.review.responses)} standalone editable={this.state.responsesEditable} onChange={event => (this.handleTextEditorChange(event))} />
                 </div>
                 {this.props.review.status !== 'Closed' && this.state.role !== 'Viewer' &&
                   <div className="form-group">

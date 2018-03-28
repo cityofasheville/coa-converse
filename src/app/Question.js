@@ -1,7 +1,6 @@
 import React from 'react';
 import { RadioGroup, Radio } from 'react-radio-group';
 import PropTypes from 'prop-types';
-import Response from './Response';
 import RichTextEditor from '../shared/RichTextEditor';
 
 const markup = (stringValue) => {

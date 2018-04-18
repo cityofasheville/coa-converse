@@ -20,6 +20,7 @@ const Homepage = (props) => {
           }}
           className=""
         >log in</a>.
+        <p><span style={{ color: '#ef6601', fontStyle: 'italic' }}>Remember to use Chrome or Firefox. IE is not yet supported.</span></p>
       </div>
     );
   }

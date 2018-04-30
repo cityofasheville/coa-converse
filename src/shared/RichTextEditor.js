@@ -25,8 +25,8 @@ class RichTextEditor extends React.Component {
       key={this.props.content}
       content={this.props.content}
       config={{
-        plugins: 'link image code',
-        toolbar: 'undo redo  | bold italic underline strikethrough| alignleft aligncenter alignright | indent outdent | code',
+        plugins: 'link image code lists',
+        toolbar: 'undo redo  | bold italic underline strikethrough| alignleft aligncenter alignright | numlist bullist | indent outdent | code',
         menubar: 'edit insert format',
         menu: {
           edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall'},

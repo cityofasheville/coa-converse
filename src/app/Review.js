@@ -363,7 +363,7 @@ class Review extends React.Component {
                       <legend>Action</legend>
                       {this.state.role === 'Supervisor' && this.props.review.status === 'Open' &&
                         <div>
-                          <p><i>Please discuss your feedback with your employee before submission for their acknowledgement.</i></p>
+                          <p><i>Please discuss your feedback with your employee before submission for their input.</i></p>
                           <RadioGroup
                             name="workflow"
                             selectedValue={this.state.actionRadio}
@@ -376,7 +376,7 @@ class Review extends React.Component {
                               <Radio value="saveonly" />Save &amp; exit
                             </label>
                             <label>
-                              <Radio value="Ready" />Submit for employee acknowledgement
+                              <Radio value="Ready" />Submit for employee input
                             </label>
                           </RadioGroup>
                           <div className="alert alert-success alert-sm" data-type="saveSuccess" id="saveSuccess2" hidden>
@@ -385,7 +385,7 @@ class Review extends React.Component {
                             </p>
                           </div>
                           <input type="button" className="btn btn-primary" value="Save" onClick={this.handleSubmit} />
-                          <span hidden={!this.state.formError} style={{ color: 'red', marginLeft: '5px' }}>Required fields are missing. You must supply a Date of check-in and fill in at least one section before you can submit this check-in for employee acknowledgement.</span>
+                          <span hidden={!this.state.formError} style={{ color: 'red', marginLeft: '5px' }}>Required fields are missing. You must supply a Date of check-in and fill in at least one section before you can submit this check-in for employee input.</span>
                         </div>
                       }
                       {this.state.role === 'Supervisor' && this.props.review.status === 'Acknowledged' &&

@@ -431,6 +431,11 @@ class Review extends React.Component {
                               <Radio value="Open" />Further discussion requested
                             </label>                          
                           </RadioGroup>
+                          <div className="alert alert-success alert-sm" data-type="saveSuccess" id="saveSuccess2" hidden>
+                            <p>
+                              Your progress was saved.
+                            </p>
+                          </div>
                           <input type="button" className="btn btn-primary" value="Save" onClick={this.handleSubmit} />
                           <span hidden={!this.state.formError} style={{ color: 'red', marginLeft: '5px' }}>Required fields are missing. You must complete all required fields before you can submit your response to your supervisor.</span>
                         </div>

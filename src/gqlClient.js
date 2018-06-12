@@ -3,7 +3,6 @@ import fetch from 'unfetch';
 import firebase from 'firebase';
 import { createHttpLink } from 'apollo-link-http';
 import { ApolloLink } from 'apollo-link';
-import { setContext } from 'apollo-link-context';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { withClientState } from 'apollo-link-state';
 import { resolvers } from './resolvers';
@@ -16,31 +15,19 @@ if (process.env.USE_LOCAL_API === 'true') {
 
 const httpLink = createHttpLink({ uri: SERVER_URL, fetch });
 
-const middlewareLink = setContext(
-  request =>
-    new Promise((success, fail) => {
-      const signedInUser = firebase.auth().currentUser;
-      if (signedInUser) {
-        signedInUser.getIdToken(true)
-        .then((idToken) => {
-          localStorage.setItem('token', idToken);
-          setTimeout(() => {
-            success({ headers: {
-              authorization: idToken,
-            } });
-          }, 10);
-        });
-      } else {
-        setTimeout(() => {
-          success({ headers: {
-            authorization: localStorage.getItem('token') || null,
-          } });
-        }, 10);
-      }
-    })
-);
-
-const link = middlewareLink.concat(httpLink);
+const authLink = new ApolloLink((operation, forward) => {
+  const token = localStorage.getItem('token') || null;
+  if (firebase.apps.length > 0) {
+    const signedInUser = firebase.auth().currentUser;
+    if (signedInUser) {
+      const newToken = signedInUser.getIdToken(true).then(idToken => (idToken));
+      operation.setContext(({ headers }) => (Object.assign({}, headers, { authorization: newToken })));
+      return forward(operation);
+    }
+  }
+  operation.setContext(({ headers }) => (Object.assign({}, headers, { authorization: token })));
+  return forward(operation);
+});
 
 const cache = new InMemoryCache();
 
@@ -53,7 +40,8 @@ const stateLink = withClientState({
 const aClient = new ApolloClient({
   link: ApolloLink.from([
     stateLink,
-    link,
+    authLink,
+    httpLink,
   ]),
   cache,
 });

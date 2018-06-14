@@ -1,51 +1,51 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { graphql, compose } from 'react-apollo';
+import { Query, Mutation } from 'react-apollo';
 import { getModalOpen } from './graphql/authQueries';
-import { updateAuthModal } from './graphql/authMutations';
+import { UPDATE_AUTHMODAL } from './graphql/authMutations';
+import LoadingAnimation from '../../shared/LoadingAnimation';
+import Error from '../../shared/Error';
 
-const AuthProviderModal = (props) => {
-  const display = (props.open) ? { display: 'block' } : { display: 'none' };
+const AuthProviderModal = () => (
+  <Query query={getModalOpen}>
+    {({ loading, error, data }) => {
+      if (loading) return <LoadingAnimation />;
+      if (error) return <Error message={error.message} />;
 
-  return (
-    <div className="">
-      <div className="modal fade in" style={display} tabIndex="-1" role="dialog">
-        <div className="modal-dialog" role="document">
-          <div className="modal-content">
-            <div className="modal-header">
-              <button
-                type="button"
-                className="close"
-                aria-label="Close"
-                onClick={() => props.updateAuthModal({
-                  variables: {
-                    open: !props.open,
-                  },
-                })}
-              >
-                <span aria-hidden="true">&times;</span>
-              </button>
+      const display = (data.modal.open) ? { display: 'block' } : { display: 'none' };
+
+      return (
+        <Mutation mutation={UPDATE_AUTHMODAL}>
+          {updateAuthModal => (
+            <div className="">
+              <div className="modal fade in" style={display} tabIndex="-1" role="dialog">
+                <div className="modal-dialog" role="document">
+                  <div className="modal-content">
+                    <div className="modal-header">
+                      <button
+                        type="button"
+                        className="close"
+                        aria-label="Close"
+                        onClick={() => updateAuthModal({
+                          variables: {
+                            open: !data.modal.open,
+                          },
+                        })}
+                      >
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div className="modal-body">
+                      <div id="firebaseui-auth-container"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="modal-body">
-              <div id="firebaseui-auth-container"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+          )}
+        </Mutation>
+      );
+    }}
+  </Query>
+);
 
-AuthProviderModal.propTypes = {
-  open: PropTypes.bool,
-  updateAuthModal: PropTypes.func,
-};
-
-export default compose(
-  graphql(updateAuthModal, { name: 'updateAuthModal' }),
-  graphql(getModalOpen, {
-    props: ({ data: { modal } }) => ({
-      open: modal.open,
-    }),
-  })
-)(AuthProviderModal);
+export default AuthProviderModal;

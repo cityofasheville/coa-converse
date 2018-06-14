@@ -1,32 +1,12 @@
 import React from 'react';
-import { graphql } from 'react-apollo';
+import { Query } from 'react-apollo';
 import gql from 'graphql-tag';
 import EmployeesTable from './EmployeesTable';
 import LoadingAnimation from '../shared/LoadingAnimation';
 import Error from '../shared/Error';
 
-const Employees = (props) => {
-  if (props.data.loading) { // eslint-disable-line react/prop-types
-    return <LoadingAnimation />;
-  }
-  if (props.data.error) { // eslint-disable-line react/prop-types
-    return <Error message={props.data.error.message} />; // eslint-disable-line react/prop-types
-  }
-
-  return (
-    <div>
-      <div className="row">
-        <div className="col-sm-12">
-          <h1>Employees</h1>
-        </div>
-      </div>
-      <EmployeesTable {...props} />
-    </div>
-  );
-};
-
-const getEmployeesQuery = gql`
-  query getEmployeesQuery($id: Int) {
+const GET_EMPLOYEES = gql`
+  query employee($id: Int) {
     employee (id: $id) {
       employees {
         id
@@ -40,13 +20,31 @@ const getEmployeesQuery = gql`
     }
   }
 `;
-const EmployeesGQL = graphql(getEmployeesQuery, {
-  options: ownProps => ({
-    variables: {
-      id: ownProps.userId,
-    },
-    fetchPolicy: 'network-only',
-  }),
-})(Employees);
 
-export default EmployeesGQL;
+const Employees = props => (
+  <Query
+    query={GET_EMPLOYEES}
+    variables={{
+      id: props.userId,
+    }}
+    fetchPolicy="network-only"
+  >
+    {({ loading, error, data }) => {
+      if (loading) return <LoadingAnimation />;
+      if (error) return <Error message={error.message} />;
+
+      return (
+        <div>
+          <div className="row">
+            <div className="col-sm-12">
+              <h1>Employees</h1>
+            </div>
+          </div>
+          <EmployeesTable data={data} />
+        </div>
+      );
+    }}
+  </Query>
+);
+
+export default Employees;

@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { graphql } from 'react-apollo';
+import { Query } from 'react-apollo';
 import gql from 'graphql-tag';
 import ReviewsTable from './ReviewsTable';
 import LoadingAnimation from '../shared/LoadingAnimation';
@@ -26,27 +26,55 @@ const getCurrentReview = (reviews) => {
   return [];
 };
 
-const Reviews = (props) => {
-  if (props.data.loading) { // eslint-disable-line react/prop-types
-    return <LoadingAnimation />;
+const GET_REVIEWS = gql`
+  query employee($id: Int) {
+    employee (id: $id) {
+      name
+      id
+      supervisor_name
+      supervisor_id
+      last_reviewed
+      reviewable
+      reviews {
+        id
+        status
+        status_date
+        employee_id
+        periodStart
+        periodEnd
+        reviewer_name
+      }
+    }
   }
-  if (props.data.error) { // eslint-disable-line react/prop-types
-    return <Error message={props.data.error.message} />; // eslint-disable-line react/prop-types
-  }
+`;
 
-  return (
-    <div>
-      <div className="row">
-        <div className="col-sm-12">
-          <h1>Check-ins with {props.data.employee.name}</h1>
-          <span style={{ fontSize: '25px', marginTop: '10px' }} className="pull-right">Current Supervisor: {props.data.employee.supervisor_name || '--'}</span>
+const Reviews = (props) => (
+  <Query
+    query={GET_REVIEWS}
+    variables={{
+      id: props.location.query.emp,
+    }}
+    fetchPolicy="network-only"
+  >
+    {({ loading, error, data }) => {
+      if (loading) return <LoadingAnimation />;
+      if (error) return <Error message={error.message} />;
+
+      return (
+        <div>
+          <div className="row">
+            <div className="col-sm-12">
+              <h1>Check-ins with {data.employee.name}</h1>
+              <span style={{ fontSize: '25px', marginTop: '10px' }} className="pull-right">Current Supervisor: {data.employee.supervisor_name || '--'}</span>
+            </div>
+          </div>
+          <ReviewsTable reviews={getCurrentReview(data.employee.reviews)} current lastReviewed={data.employee.last_reviewed} reviewable={data.employee.reviewable} supervisorId={data.employee.supervisor_id} emp={data.employee.id} />
+          <ReviewsTable reviews={getClosedReviews(data.employee.reviews)} />
         </div>
-      </div>
-      <ReviewsTable reviews={getCurrentReview(props.data.employee.reviews)} current lastReviewed={props.data.employee.last_reviewed} reviewable={props.data.employee.reviewable} supervisorId={props.data.employee.supervisor_id} emp={props.data.employee.id} />
-      <ReviewsTable reviews={getClosedReviews(props.data.employee.reviews)} />
-    </div>
-  );
-}
+      );
+    }}
+  </Query>
+);
 
 const questionShape = {
   id: PropTypes.number,
@@ -96,35 +124,4 @@ Reviews.propTypes = {
   employee: PropTypes.shape(employeeShape), // eslint-disable-line
 };
 
-const getReviewsQuery = gql`
-  query getReviewsQuery($id: Int) {
-    employee (id: $id) {
-      name
-      id
-      supervisor_name
-      supervisor_id
-      last_reviewed
-      reviewable
-      reviews {
-        id
-        status
-        status_date
-        employee_id
-        periodStart
-        periodEnd
-        reviewer_name
-      }
-    }
-  }
-`;
-
-const ReviewsGQL = graphql(getReviewsQuery, {
-  options: ownProps => ({
-    variables: {
-      id: ownProps.location.query.emp,
-    },
-    fetchPolicy: 'network-only',
-  }),
-})(Reviews);
-
-export default ReviewsGQL;
+export default Reviews;

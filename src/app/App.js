@@ -4,7 +4,7 @@ import firebase from 'firebase';
 import firebaseui from 'firebaseui';
 import PropTypes from 'prop-types';
 import { graphql, compose, withApollo } from 'react-apollo';
-import { updateUser } from '../utilities/auth/graphql/authMutations';
+import { UPDATE_USER } from '../utilities/auth/graphql/authMutations';
 import { getUser } from '../utilities/auth/graphql/authQueries';
 import Navbar from './Navbar';
 import AuthProviderModal from '../utilities/auth/authProviderModal';
@@ -100,7 +100,7 @@ Main.propTypes = {
 };
 
 const App = compose(
-  graphql(updateUser, { name: 'updateUser' }),
+  graphql(UPDATE_USER, { name: 'updateUser' }),
   graphql(getUser, {
     props: ({ data: { user } }) => ({
       user,

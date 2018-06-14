@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import ReactTable from 'react-table';
 import moment from 'moment';
 import { Link } from 'react-router';
-import { graphql } from 'react-apollo';
+import { Query } from 'react-apollo';
 import gql from 'graphql-tag';
 import LoadingAnimation from '../shared/LoadingAnimation';
 import Error from '../shared/Error';
@@ -21,10 +21,10 @@ const getTimeSinceLastConversation = (reviewDate, reviewable) => {
   const today = moment.utc(new Date(), 'M/DD/YYYY');
   const daysSinceLastReview = today.diff(moment.utc(lastReviewedDate, 'M/DD/YYYY'), 'days');
   if (daysSinceLastReview > 30) {
-    return <span style={{ color: 'red' }}>{daysSinceLastReview} days <Icon path={IM_WARNING2} size={18} /></span>
+    return <span style={{ color: 'red' }}>{daysSinceLastReview} days <Icon path={IM_WARNING2} size={18} /></span>;
   }
   if (daysSinceLastReview > 21) {
-    return <span style={{ color: 'orange'}}>{daysSinceLastReview} days <Icon path={IM_HOURGLASS} size={18} /></span>
+    return <span style={{ color: 'orange'}}>{daysSinceLastReview} days <Icon path={IM_HOURGLASS} size={18} /></span>;
   }
   return <span>{daysSinceLastReview} days </span>
 };
@@ -33,9 +33,9 @@ const dataColumnsCurrent = [
   {
     Header: (<div>Check-in Date</div>),
     id: 'periodEnd',
-    accessor: (review) => (<span title="View check-in">{moment.utc(review.periodEnd).format('M/DD/YYYY')}</span>),
+    accessor: review => (<span title="View check-in">{moment.utc(review.periodEnd).format('M/DD/YYYY')}</span>),
     minWidth: 160,
-    Cell: (row) => (
+    Cell: row => (
       <Link to={{ pathname: 'check-in', query: { emp: row.original.employee_id, 'check-in': row.original.id } }}>{row.value}</Link>
     ),
   },
@@ -61,7 +61,7 @@ const dataColumnsCurrent = [
   {
     Header: 'Last Change',
     id: 'status_date',
-    accessor: (review) => (<span>{moment.utc(review.status_date).format('M/DD/YYYY')}</span>),
+    accessor: review => (<span>{moment.utc(review.status_date).format('M/DD/YYYY')}</span>),
     maxWidth: 200,
     minWidth: 130,
   },
@@ -71,9 +71,9 @@ const dataColumns = [
   {
     Header: (<div>Check-in Date</div>),
     id: 'periodEnd',
-    accessor: (review) => (<span title="View check-in">{moment.utc(review.periodEnd).format('M/DD/YYYY')}</span>),
+    accessor: review => (<span title="View check-in">{moment.utc(review.periodEnd).format('M/DD/YYYY')}</span>),
     minWidth: 200,
-    Cell: (row) => (
+    Cell: row => (
       <Link to={{ pathname: 'check-in', query: { emp: row.original.employee_id, 'check-in': row.original.id } }}>{row.value}</Link>
     ),
   },
@@ -84,47 +84,58 @@ const dataColumns = [
   }
 ];
 
-const ReviewsTable = props => {
-  if (props.data.loading) { // eslint-disable-line react/prop-types
-    return <LoadingAnimation />;
+const GET_LOGGED_IN_EMPLOYEE = gql`
+  query employee {
+    employee {
+      id
+      name
+    }
   }
-  if (props.data.error) { // eslint-disable-line react/prop-types
-    return <Error message={props.data.error.message} />; // eslint-disable-line react/prop-types
-  }
+`;
 
-  const reviews = props.reviews === null ? [] : props.reviews;
-  const loggedInEmpId = props.data.employee.id;
-  return (
-    <div className="row">
-      <div className="col-sm-12">
-        <h2>
-          {props.current ? 'Current Check-in' : 'Past Check-ins'}
-          {props.current &&
-            <span style={{ fontSize: '16px', marginLeft: '15px', fontStyle: 'italic' }}>Time since last check-in: {getTimeSinceLastConversation(props.lastReviewed, props.reviewable)}</span>
-          }
-        </h2>
-        {reviews.length === 0 &&
-          <div className="alert alert-warning">
-            <span className="alert-text">{props.current ? 'No current check-in found' : 'No past check-ins found'}</span>
-            {props.current && props.reviewable && (props.supervisorId === loggedInEmpId) &&
-              <Link to={{ pathname: 'check-in', query: { emp: props.emp } }}><div className="btn btn-primary btn-sm" style={{ marginLeft: '10px' }}>Begin a check-in</div></Link>
+const ReviewsTable = props => (
+  <Query
+    query={GET_LOGGED_IN_EMPLOYEE}
+  >
+    {({ loading, error, data }) => {
+      if (loading) return <LoadingAnimation />;
+      if (error) return <Error message={error.message} />;
+
+      const reviews = props.reviews === null ? [] : props.reviews;
+      const loggedInEmpId = data.employee.id;
+      return (
+        <div className="row">
+          <div className="col-sm-12">
+            <h2>
+              {props.current ? 'Current Check-in' : 'Past Check-ins'}
+              {props.current &&
+                <span style={{ fontSize: '16px', marginLeft: '15px', fontStyle: 'italic' }}>Time since last check-in: {getTimeSinceLastConversation(props.lastReviewed, props.reviewable)}</span>
+              }
+            </h2>
+            {reviews.length === 0 &&
+              <div className="alert alert-warning">
+                <span className="alert-text">{props.current ? 'No current check-in found' : 'No past check-ins found'}</span>
+                {props.current && props.reviewable && (props.supervisorId === loggedInEmpId) &&
+                  <Link to={{ pathname: 'check-in', query: { emp: props.emp } }}><div className="btn btn-primary btn-sm" style={{ marginLeft: '10px' }}>Begin a check-in</div></Link>
+                }
+              </div>
+            }
+            {props.reviews.length > 0 &&
+              <div alt={props.current ? 'Table displaying current check-in' : 'Table of past check-ins'} style={{ marginTop: '10px' }}>
+                <ReactTable
+                  data={reviews}
+                  columns={props.current ? dataColumnsCurrent : dataColumns}
+                  pageSize={reviews.length < 20 ? props.reviews.length : 20}
+                  showPagination={reviews.length >= 20 ? true : false}
+                />
+              </div>
             }
           </div>
-        }
-        {props.reviews.length > 0 &&
-          <div alt={props.current ? 'Table displaying current check-in' : 'Table of past check-ins'} style={{ marginTop: '10px' }}>
-            <ReactTable
-              data={reviews}
-              columns={props.current ? dataColumnsCurrent : dataColumns}
-              pageSize={reviews.length < 20 ? props.reviews.length : 20}
-              showPagination={reviews.length >= 20 ? true : false}
-            />
-          </div>
-        }
-      </div>
-    </div>
-  );
-}
+        </div>
+      );
+    }}
+  </Query>
+);
 
 const questionShape = {
   id: PropTypes.number,
@@ -164,13 +175,4 @@ ReviewsTable.defaultProps = {
   current: false,
 };
 
-const getLoggedInEmpIdQuery = gql`
-  query getLoggedInEmpIdQuery {
-    employee {
-      id
-      name
-    }
-  }
-`;
-
-export default graphql(getLoggedInEmpIdQuery, {})(ReviewsTable);
+export default ReviewsTable;

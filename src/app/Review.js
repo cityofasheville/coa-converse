@@ -1,9 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
-import Collapsible from 'react-collapsible';
 import { Link, browserHistory } from 'react-router';
-import { graphql, withApollo } from 'react-apollo';
+import { Mutation } from 'react-apollo';
 import gql from 'graphql-tag';
 import { Radio, RadioGroup } from 'react-radio-group';
 import moment from 'moment';
@@ -11,6 +10,7 @@ import DatePickerWrapper from '../shared/DatePickerWrapper';
 import Question from './Question';
 import Response from './Response';
 import PrintableReview from './PrintableReview';
+import CheckInInstructions from './CheckInInstructions';
 
 const getResponse = (questionId, responses) => {
   // assumes 1:1 relationship between a question and a response
@@ -83,7 +83,35 @@ const changesPresent = (state, original) => {
   return false;
 };
 
-//let autoSaveInterval;
+const submitReview = gql`
+  mutation updateReview($id: Int, $reviewInput: ReviewInput!) {
+    updateReview (id: $id, review: $reviewInput) {
+      id
+      status
+      status_date
+      supervisor_id
+      employee_id
+      position
+      periodStart
+      periodEnd
+      reviewer_name
+      employee_name
+      questions {
+        id
+        type
+        question
+        answer
+        required
+      }
+      responses {
+        question_id
+        Response
+      }
+    }
+  }
+`;
+
+let autoSaveInterval = null;
 
 class Review extends React.Component {
   constructor(props) {
@@ -102,6 +130,8 @@ class Review extends React.Component {
       validationErrors: initialErrors,
       formError: initialErrors.startDate || initialErrors.endDate || initialErrors.questions.length > 0 || initialErrors.responses.length > 0,
       modalIsOpen: false,
+      stayOnPageAfterSave: true,
+      changesSinceLastSave: 0,
     };
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleEndDateChange = this.handleEndDateChange.bind(this);
@@ -113,14 +143,18 @@ class Review extends React.Component {
 
   // componentDidMount() {
   //   if (this.state.answersEditable || this.state.responsesEditable) {
-  //     //autoSaveInterval = setInterval(() => this.handleSubmit(true), 30000);
-  //     setTimeout(() => showReminder(), 10000);
+  //     //autoSaveInterval = setInterval(() => this.handleSubmit(submitReview, true), 5000);
+  //     //setTimeout(() => showReminder(), 10000);
   //   }
   // }
 
-  //componentWillUnmount() {
-    //clearInterval(autoSaveInterval);
-  //}
+  componentWillUnmount() {
+    clearInterval(autoSaveInterval);
+  }
+
+  shouldComponentUpdate() {
+    return false;
+  }
 
   handleOpenModal() {
     if (changesPresent(this.state, this.props.review)) {
@@ -141,12 +175,11 @@ class Review extends React.Component {
     this.setState({ modalIsOpen: false });
   }
 
-  handleSubmit(auto) {
-    let stayOnPage = this.state.actionRadio === 'saveprogress';
-    let successId = 'saveSuccess2';
+  handleSubmit(submitFunction, auto) {
+    console.log('saving');
+    this.setState({ stayOnPageAfterSave: this.state.actionRadio === 'saveprogress' });
     if (auto === true) {
-      stayOnPage = true;
-      successId = 'saveSuccess1';
+      this.setState({ stayOnPageAfterSave: true });
     }
     let newStatus = this.props.review.status;
     if (auto !== true) {
@@ -157,35 +190,37 @@ class Review extends React.Component {
         newStatus = this.state.actionRadio;
       }
     }
-    this.props.submit({
-      id: this.props.review.id,
-      apolloClient: this.props.client,
-      reviewInput: {
-        status: newStatus,
-        periodEnd: this.state.periodEnd,
-        questions: this.state.questions.map(question => ({
-          answer: question.answer,
-          id: question.id,
-        })),
-        responses: this.state.responses.map(response => ({
-          question_id: response.question_id,
-          Response: response.Response,
-        })),
+    submitFunction({
+      variables: {
+        id: this.props.review.id,
+        reviewInput: {
+          status: newStatus,
+          periodEnd: this.state.periodEnd,
+          questions: this.state.questions.map(question => ({
+            answer: question.answer,
+            id: question.id,
+          })),
+          responses: this.state.responses.map(response => ({
+            question_id: response.question_id,
+            Response: response.Response,
+          })),
+        },
       },
-    }, stayOnPage, successId);
+    });
   }
 
-  handleEndDateChange(value) {
-    this.setState({ periodEnd: value != null ? value.format('M/DD/YYYY') : value });
+  handleEndDateChange(value, submitFunction) {
+    this.setState({ periodEnd: value != null ? value.format('M/DD/YYYY') : value }, () => this.handleSubmit(submitFunction, true));
   }
 
-  handleTextEditorChange(event) {
+  handleTextEditorChange(event, submitFunction) {
     let splitId;
     let content;
     if (event.type === 'blur') {
       splitId = event.target.id.split('-');
       content = event.target.getContent();
     } else {
+      this.setState({ changesSinceLastSave: this.state.changesSinceLastSave + 1 });
       splitId = event.target.getAttribute('data-id').split('-');
       content = event.target.innerHTML;
     }
@@ -200,7 +235,11 @@ class Review extends React.Component {
           newResponses.push(Object.assign({}, this.state.responses[i]));
         }
       }
-      this.setState({ responses: newResponses });
+      this.setState({ responses: newResponses }, () => {
+        if (this.state.changesSinceLastSave > 10) {
+          this.handleSubmit(submitFunction, true);
+        }
+      });
     } else {
       const newQuestions = [];
       for (let i = 0; i < this.state.questions.length; i += 1) {
@@ -210,11 +249,15 @@ class Review extends React.Component {
           newQuestions.push(Object.assign({}, this.state.questions[i]));
         }
       }
-      this.setState({ questions: newQuestions });
+      this.setState({ questions: newQuestions }, () => {
+        if (this.state.changesSinceLastSave > 10) {
+          this.handleSubmit(submitFunction, true);
+        }
+      });
     }
   }
 
-  handleRadioQuestionChange(value, questionId) {
+  handleRadioQuestionChange(value, questionId, submitFunction) {
     const newQuestions = [];
     for (let i = 0; i < this.state.questions.length; i += 1) {
       if (questionId == this.state.questions[i].id) {
@@ -223,7 +266,7 @@ class Review extends React.Component {
         newQuestions.push(Object.assign({}, this.state.questions[i]));
       }
     }
-    this.setState({ questions: newQuestions });
+    this.setState({ questions: newQuestions }, () => this.handleSubmit(submitFunction, true));
   }
 
   hasErrors() {
@@ -237,236 +280,244 @@ class Review extends React.Component {
   render() {
     const dateErrors = validate(this.state);
     return (
-      <div>
-        {this.props.location.query.printable === 'yes' && 
-          <PrintableReview review={this.props.review} />
-        }
-        {this.props.location.query.printable !== 'yes' &&
-          <form>
-            <div className="row form-horizontal">
-              <h1>Check-in between {this.props.review.employee_name} <br /> and supervisor {this.props.review.reviewer_name}</h1>
-              <Link className="pull-right" style={{ fontSize: '20px' }} onClick={this.handleOpenModal}>Printable Version</Link>
-              <Modal
-                isOpen={this.state.modalIsOpen}
-                contentLabel="Discard check-in changes?"
-              >
-                <h1 ref={subtitle => this.subtitle = subtitle}>Discard changes to this check-in?</h1>
-                <p>There are unsaved changes to this check-in. Navigating away from this page will cause these changes to be lost.</p>
-                  <button className="btn btn-primary" onClick={this.handleCloseModal}>Cancel</button>
-                  <button className="btn btn-warning btn-sm" style={{ marginLeft: '10px' }} onClick={this.handleModalContinue}>Disgard changes and proceed to printable check-in</button>
-              </Modal>
-              <div className="col-sm-12">
-                <div className="form-group" id="serverError" hidden>
-                  <div className="alert alert-danger alert-sm">
-                    <p>
-                      There was an error processing your submission. Please contact <a href="mailto:Helpdesk@ashevillenc.gov" target="_blank" style={{ color: '#fff', textDecoration: 'underline' }}>help desk</a> and inform them of the time and date you tried to submit the form.
-                    </p>
-                    <p id="errorDetails">
-                      ERROR
-                    </p>
-                  </div>
-                </div>
-                <div className="form-group" hidden={!(this.state.answersEditable || this.state.responsesEditable)} style={{ position: 'fixed', bottom: '2%', right: '5%', zIndex: '1' }}>
-                  <div className="alert alert-info alert-xs" style={{ paddingBottom: '20px', paddingLeft: '5px' }}>
-                    <span className="alert alert-info alert-xs" style={{ padding: '3px' }} data-type="saveSuccess" id="saveSuccess1" hidden>
-                      Progress successfully saved.
-                    </span>
-                    <button className="btn btn-primary btn-xs pull-right" style={{ position: 'relative', top: '-10px', right: '-10px' }} type="button" id="plus" onClick={() => { document.getElementById('autosaveWarningText').classList.toggle('show'); document.getElementById('plus').classList.toggle('hidden'); document.getElementById('minus').classList.toggle('hidden'); }}>
-                      +
-                    </button>
-                    <button className="btn btn-primary btn-xs hidden pull-right" type="button" id="minus" style={{ position: 'relative', top: '-10px', right: '-10px' }} onClick={() => { document.getElementById('autosaveWarningText').classList.toggle('show'); document.getElementById('minus').classList.toggle('hidden'); document.getElementById('plus').classList.toggle('hidden'); }}>
-                      -
-                    </button>
-                    <input type="button" value="Save your work" className="btn btn-primary btn-xs pull-right" onClick={() => this.handleSubmit(true)} style={{ position: 'relative', top: '-10px', right: '-2px', marginBottom: '3px' }} ></input>
-                    <div className="collapse" id="autosaveWarningText">
-                      <div className="card card-body">
-                        Autosave has not yet been implemented.<br /> Remember to save your progress frequently.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="form-group">
-                  <fieldset className="reviewQuestionFieldset">
-                    <legend>Check-in Details</legend>
-                    <div className="col-sm-12" style={{ marginBottom: '10px' }}>
-                      <label htmlFor="startDate" className="col-sm-4" style={{ textAlign: 'right' }}>Previous check-in completed: </label>
-                      <div className={dateErrors.startDate ? 'col-sm-8 invalid' : 'col-xs-8'}>
-                        <span>{(!this.state.periodStart || moment.utc(this.state.periodStart).format('M/DD/YYYY') === '1/01/1970') ? 'Never' : moment.utc(this.state.periodStart).format('M/DD/YYYY')}</span>
-                      </div>
-                    </div>
-                    <div className={dateErrors.endDate ? 'col-sm-12 invalid' : 'col-sm-12'}>
-                      <label htmlFor="endDate" className="col-sm-4" style={{ textAlign: 'right' }}>Date of this check-in: </label>
-                      <div className="col-sm-8">
-                        {this.state.answersEditable &&
-                          <DatePickerWrapper selected={moment.utc(this.state.periodEnd)} id="endDate" onChange={value => this.handleEndDateChange(value)} />
-                        }
-                        {this.state.answersEditable && dateErrors.endDate &&
-                          <span style={{ color: 'red', fontWeight: 'bold', marginLeft: '10px' }}>&apos;Date of this check-in&apos; is required</span>
-                        }
-                        {!this.state.answersEditable &&
-                          <span>{moment.utc(this.state.periodEnd).format('M/DD/YYYY')}</span>
-                        }
-                      </div>
-                    </div>
-                  </fieldset>
-                </div>
-                <div className="form-group">
-                  <Collapsible trigger="Click here for your Check-in Reminder">
-                    <div>
-                      <p>
-                        The purpose of the check-in is to provide an opportunity for regular conversations between supervisors and employees. During a check-in employees and supervisors can set or clarify expectations, share observations, and discuss career aspirations and development needs that will enhance the employee&apos;s performance for success.
-                      </p>
-                      <p>
-                        Check-in core areas:
-                        <ol>
-                          <li>Observations and Reflections: Share frequent, two-way feedback between employee and supervisor, providing observations and reflections about current expectations, responsibilities and goals.</li>
-                          <li>Looking Forward: Identify any new or revised expectations, goals, responsibilities or special projects. A new project may be identified based on the discussion.</li>
-                          <li>Career: Discuss any career goals or aspirations, and/or how the employee can continue to grow in their role.</li>
-                          <li>Development: The employee and supervisor can discuss and set actionable goals for professional development.</li>
-                        </ol>
-                      </p>
-                      <p>
-                        Best Practices:
-                        <ul>
-                          <li>Provide timely, specific, balanced observations.</li>
-                          <li>Actively listen; listen to understand.</li>
-                          <li>Ask questions to ensure you are clear about the feedback you&apos;re receiving.</li>
-                          <li>Value different perspectives and be open to hearing constructive feedback.</li>
-                          <li>Create mutually agreed upon actions and time lines.</li>
-                          <li>Be sure to talk about successes and accomplishments as well as any areas where improvement is necessary.</li>
-                        </ul>
-                      </p>
-                    </div>
-                  </Collapsible>
-                </div>
-                <div className="form-group">
-                  {
-                    this.props.review.questions.map((question, index) => {
-                      const resp = getResponse(question.id, this.props.review.responses);
-                      return (
-                        <div key={['question', index].join('_')}>
-                          <Question question={question} editable={this.state.answersEditable} onBlur={question.type === 'Text' ? (event => (this.handleTextEditorChange(event))) : (value => (this.handleRadioQuestionChange(value, question.id)))} />
-                          {resp !== null &&
-                            <Response response={resp} editable={this.state.responsesEditable} onChange={event => (this.handleTextEditorChange(event))} />
-                          }
-                        </div>
-                      );
-                    })
-                  }
-                </div>
-                <div className="form-group">
-                  <Response response={getMainReviewResponse(this.props.review.responses)} standalone editable={this.state.responsesEditable} onChange={event => (this.handleTextEditorChange(event))} />
-                </div>
-                {this.props.review.status !== 'Closed' && this.state.role !== 'Viewer' &&
-                  <div className="form-group">
-                    <fieldset className="reviewQuestionFieldset">
-                      <legend>Action</legend>
-                      {this.state.role === 'Supervisor' && this.props.review.status === 'Open' &&
-                        <div>
-                          <p><i>Please discuss your feedback with your employee before submission for their input.</i></p>
-                          <RadioGroup
-                            name="workflow"
-                            selectedValue={this.state.actionRadio}
-                            onChange={val => (this.setState({ actionRadio: val }))}
-                          >
-                            <label>
-                              <Radio value="saveprogress" />Save progress
-                            </label>
-                            <label>
-                              <Radio value="saveonly" />Save &amp; exit
-                            </label>
-                            <label>
-                              <Radio value="Ready" />Submit for employee input
-                            </label>
-                          </RadioGroup>
-                          <div className="alert alert-success alert-sm" data-type="saveSuccess" id="saveSuccess2" hidden>
-                            <p>
-                              Your progress was saved.
-                            </p>
-                          </div>
-                          <input type="button" className="btn btn-primary" value="Save" onClick={this.handleSubmit} />
-                          <span hidden={!this.state.formError} style={{ color: 'red', marginLeft: '5px' }}>Required fields are missing. You must supply a Date of check-in and fill in at least one section before you can submit this check-in for employee input.</span>
-                        </div>
-                      }
-                      {this.state.role === 'Supervisor' && this.props.review.status === 'Acknowledged' &&
-                        <div>
-                          <RadioGroup
-                            name="workflow"
-                            selectedValue={this.state.actionRadio}
-                            onChange={val => (this.setState({ actionRadio: val }))}
-                          >
-                            <label>
-                              <Radio value="Open" />Re-open
-                            </label>                          
-                            <label>
-                              <Radio value="Closed" />Submit to HR record
-                            </label>
-                          </RadioGroup>
-                          <input type="button" className="btn btn-primary" value="Save" onClick={this.handleSubmit} />
-                        </div>
-                      }
-                      {this.state.role === 'Supervisor' && this.props.review.status === 'Ready' &&
-                        <div className="alert alert-info">
-                          You must wait for your employee to respond before further actions can be taken.
-                        </div>
-                      }
-                      {this.state.role === 'Employee' && this.props.review.status === 'Ready' &&
-                        <div>
-                          <p><i>By acknowledging, you affirm that you have read your supervisor&apos;s feedback and discussed it with your supervisor.</i></p>
-                          <RadioGroup
-                            name="workflow"
-                            selectedValue={this.state.actionRadio}
-                            onChange={val => (this.setState({ actionRadio: val }))}
-                          >
-                            <label>
-                              <Radio value="saveprogress" />Save progress
-                            </label>
-                            <label>
-                              <Radio value="saveonly" />Save &amp; exit
-                            </label>
-                            <label>
-                              <Radio value="Acknowledged" />Acknowledge
-                            </label>
-                            <label>
-                              <Radio value="Open" />Further discussion requested
-                            </label>                          
-                          </RadioGroup>
-                          <div className="alert alert-success alert-sm" data-type="saveSuccess" id="saveSuccess2" hidden>
-                            <p>
-                              Your progress was saved.
-                            </p>
-                          </div>
-                          <input type="button" className="btn btn-primary" value="Save" onClick={this.handleSubmit} />
-                          <span hidden={!this.state.formError} style={{ color: 'red', marginLeft: '5px' }}>Required fields are missing. You must complete all required fields before you can submit your response to your supervisor.</span>
-                        </div>
-                      }
-                      {this.state.role === 'Employee' && this.props.review.status === 'Open' &&
-                        <div className="alert alert-info">
-                          Your supervisor has not yet released their feedback for your response.
-                        </div>
-                      }
-                      {this.state.role === 'Employee' && this.props.review.status === 'Acknowledged' &&
-                        <div className="alert alert-info">
-                          You have acknowledged this check-in. When your supervisor closes the check-in, it will appear in your HR record.
-                        </div>
-                      }
-                    </fieldset>
-                  </div>
+      <Mutation
+        mutation={submitReview}
+        onError={(error) => {
+          if (document.getElementById('errorDetails')) {
+            document.getElementById('errorDetails').innerHTML = `<span>Error details: </span> ${error}`;
+            document.getElementById('serverError').style.display = 'block';
+          }
+          scrollTo(document.body, 0, 100);
+        }}
+        onCompleted={(data) => {
+          if (!this.state.stayOnPageAfterSave) {
+            browserHistory.push(['/?emp=', data.updateReview.employee_id, '&mode=check-ins'].join(''));
+          }
+          this.setState({ changesSinceLastSave: 0 });
+          if (document.getElementById('saveSuccess2')) {
+            showSaveSuccess('saveSuccess2');
+          }
+        }}
+        ignoreResults
+      >
+        {(submit, { loading, error, data }) => {
+          if (this.state.answersEditable || this.state.responsesEditable) {
+            if (autoSaveInterval === null) {
+              console.log('set interval');
+              autoSaveInterval = setInterval(() => {
+                if (this.state.changesSinceLastSave > 0) {
+                  this.handleSubmit(submit, true);
                 }
-              </div>
+              }, 5000);
+            }
+          }
+          return (
+            <div>
+              {this.props.location.query.printable === 'yes' &&
+                <PrintableReview review={this.props.review} />
+              }
+              {this.props.location.query.printable !== 'yes' &&
+                <form>
+                  <div className="row form-horizontal">
+                    <h1>Check-in between {this.props.review.employee_name} <br /> and supervisor {this.props.review.reviewer_name}</h1>
+                    <Link className="pull-right" style={{ fontSize: '20px' }} onClick={this.handleOpenModal}>Printable Version</Link>
+                    <Modal
+                      isOpen={this.state.modalIsOpen}
+                      contentLabel="Discard check-in changes?"
+                    >
+                      <h1 ref={subtitle => this.subtitle = subtitle}>Discard changes to this check-in?</h1>
+                      <p>There are unsaved changes to this check-in. Navigating away from this page will cause these changes to be lost.</p>
+                        <button className="btn btn-primary" onClick={this.handleCloseModal}>Cancel</button>
+                        <button className="btn btn-warning btn-sm" style={{ marginLeft: '10px' }} onClick={this.handleModalContinue}>Disgard changes and proceed to printable check-in</button>
+                    </Modal>
+                    <div className="col-sm-12">
+                      <div className="form-group" id="serverError" hidden>
+                        <div className="alert alert-danger alert-sm">
+                          <p>
+                            There was an error processing your submission. Please contact <a href="mailto:Helpdesk@ashevillenc.gov" target="_blank" style={{ color: '#fff', textDecoration: 'underline' }}>help desk</a> and inform them of the time and date you tried to submit the form.
+                          </p>
+                          <p id="errorDetails">
+                            ERROR
+                          </p>
+                        </div>
+                      </div>
+                      <div className="form-group" hidden={!(this.state.answersEditable || this.state.responsesEditable)} style={{ position: 'fixed', bottom: '2%', right: '5%', zIndex: '1' }}>
+                        <div className="alert alert-info alert-xs" style={{ paddingBottom: '20px', paddingLeft: '5px' }}>
+                          <span className="alert alert-info alert-xs" style={{ padding: '3px' }} data-type="saveSuccess" id="saveSuccess1" hidden>
+                            Progress successfully saved.
+                          </span>
+                          <button className="btn btn-primary btn-xs pull-right" style={{ position: 'relative', top: '-10px', right: '-10px' }} type="button" id="plus" onClick={() => { document.getElementById('autosaveWarningText').classList.toggle('show'); document.getElementById('plus').classList.toggle('hidden'); document.getElementById('minus').classList.toggle('hidden'); }}>
+                            +
+                          </button>
+                          <button className="btn btn-primary btn-xs hidden pull-right" type="button" id="minus" style={{ position: 'relative', top: '-10px', right: '-10px' }} onClick={() => { document.getElementById('autosaveWarningText').classList.toggle('show'); document.getElementById('minus').classList.toggle('hidden'); document.getElementById('plus').classList.toggle('hidden'); }}>
+                            -
+                          </button>
+                          <input type="button" value="Save your work" className="btn btn-primary btn-xs pull-right" onClick={() => this.handleSubmit(submit, true)} style={{ position: 'relative', top: '-10px', right: '-2px', marginBottom: '3px' }} ></input>
+                          <div className="collapse" id="autosaveWarningText">
+                            <div className="card card-body">
+                              Autosave has not yet been implemented.<br /> Remember to save your progress frequently.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="form-group">
+                        <fieldset className="reviewQuestionFieldset">
+                          <legend>Check-in Details</legend>
+                          <div className="col-sm-12" style={{ marginBottom: '10px' }}>
+                            <label htmlFor="startDate" className="col-sm-4" style={{ textAlign: 'right' }}>Previous check-in completed: </label>
+                            <div className={dateErrors.startDate ? 'col-sm-8 invalid' : 'col-xs-8'}>
+                              <span>{(!this.state.periodStart || moment.utc(this.state.periodStart).format('M/DD/YYYY') === '1/01/1970') ? 'Never' : moment.utc(this.state.periodStart).format('M/DD/YYYY')}</span>
+                            </div>
+                          </div>
+                          <div className={dateErrors.endDate ? 'col-sm-12 invalid' : 'col-sm-12'}>
+                            <label htmlFor="endDate" className="col-sm-4" style={{ textAlign: 'right' }}>Date of this check-in: </label>
+                            <div className="col-sm-8">
+                              {this.state.answersEditable &&
+                                <DatePickerWrapper selected={moment.utc(this.state.periodEnd)} id="endDate" onChange={value => this.handleEndDateChange(value, submit)} />
+                              }
+                              {this.state.answersEditable && dateErrors.endDate &&
+                                <span style={{ color: 'red', fontWeight: 'bold', marginLeft: '10px' }}>&apos;Date of this check-in&apos; is required</span>
+                              }
+                              {!this.state.answersEditable &&
+                                <span>{moment.utc(this.state.periodEnd).format('M/DD/YYYY')}</span>
+                              }
+                            </div>
+                          </div>
+                        </fieldset>
+                      </div>
+                      <CheckInInstructions />
+                      <div className="form-group">
+                        {
+                          this.props.review.questions.map((question, index) => {
+                            const resp = getResponse(question.id, this.props.review.responses);
+                            return (
+                              <div key={['question', index].join('_')}>
+                                <Question question={question} editable={this.state.answersEditable} onBlur={question.type === 'Text' ? (event => (this.handleTextEditorChange(event, submit))) : (value => (this.handleRadioQuestionChange(value, question.id, submit)))} />
+                                {resp !== null &&
+                                  <Response response={resp} editable={this.state.responsesEditable} onChange={event => (this.handleTextEditorChange(event, submit))} />
+                                }
+                              </div>
+                            );
+                          })
+                        }
+                      </div>
+                      <div className="form-group">
+                        <Response response={getMainReviewResponse(this.props.review.responses)} standalone editable={this.state.responsesEditable} onChange={event => (this.handleTextEditorChange(event, submit))} />
+                      </div>
+                      {this.props.review.status !== 'Closed' && this.state.role !== 'Viewer' &&
+                        <div className="form-group">
+                          <fieldset className="reviewQuestionFieldset">
+                            <legend>Action</legend>
+                            {this.state.role === 'Supervisor' && this.props.review.status === 'Open' &&
+                              <div>
+                                <p><i>Please discuss your feedback with your employee before submission for their input.</i></p>
+                                <RadioGroup
+                                  name="workflow"
+                                  selectedValue={this.state.actionRadio}
+                                  onChange={val => (this.setState({ actionRadio: val }))}
+                                >
+                                  <label>
+                                    <Radio value="saveprogress" />Save progress
+                                  </label>
+                                  <label>
+                                    <Radio value="saveonly" />Save &amp; exit
+                                  </label>
+                                  <label>
+                                    <Radio value="Ready" />Submit for employee input
+                                  </label>
+                                </RadioGroup>
+                                <div className="alert alert-success alert-sm" data-type="saveSuccess" id="saveSuccess2" hidden>
+                                  <p>
+                                    Your progress was saved.
+                                  </p>
+                                </div>
+                                <input type="button" className="btn btn-primary" value="Save" onClick={() => this.handleSubmit(submit)} />
+                                <span hidden={!this.state.formError} style={{ color: 'red', marginLeft: '5px' }}>Required fields are missing. You must supply a Date of check-in and fill in at least one section before you can submit this check-in for employee input.</span>
+                              </div>
+                            }
+                            {this.state.role === 'Supervisor' && this.props.review.status === 'Acknowledged' &&
+                              <div>
+                                <RadioGroup
+                                  name="workflow"
+                                  selectedValue={this.state.actionRadio}
+                                  onChange={val => (this.setState({ actionRadio: val }))}
+                                >
+                                  <label>
+                                    <Radio value="Open" />Re-open
+                                  </label>                          
+                                  <label>
+                                    <Radio value="Closed" />Submit to HR record
+                                  </label>
+                                </RadioGroup>
+                                <input type="button" className="btn btn-primary" value="Save" onClick={() => this.handleSubmit(submit)} />
+                              </div>
+                            }
+                            {this.state.role === 'Supervisor' && this.props.review.status === 'Ready' &&
+                              <div className="alert alert-info">
+                                You must wait for your employee to respond before further actions can be taken.
+                              </div>
+                            }
+                            {this.state.role === 'Employee' && this.props.review.status === 'Ready' &&
+                              <div>
+                                <p><i>By acknowledging, you affirm that you have read your supervisor&apos;s feedback and discussed it with your supervisor.</i></p>
+                                <RadioGroup
+                                  name="workflow"
+                                  selectedValue={this.state.actionRadio}
+                                  onChange={val => (this.setState({ actionRadio: val }))}
+                                >
+                                  <label>
+                                    <Radio value="saveprogress" />Save progress
+                                  </label>
+                                  <label>
+                                    <Radio value="saveonly" />Save &amp; exit
+                                  </label>
+                                  <label>
+                                    <Radio value="Acknowledged" />Acknowledge
+                                  </label>
+                                  <label>
+                                    <Radio value="Open" />Further discussion requested
+                                  </label>                          
+                                </RadioGroup>
+                                <div className="alert alert-success alert-sm" data-type="saveSuccess" id="saveSuccess2" hidden>
+                                  <p>
+                                    Your progress was saved.
+                                  </p>
+                                </div>
+                                <input type="button" className="btn btn-primary" value="Save" onClick={() => this.handleSubmit(submit)} />
+                                <span hidden={!this.state.formError} style={{ color: 'red', marginLeft: '5px' }}>Required fields are missing. You must complete all required fields before you can submit your response to your supervisor.</span>
+                              </div>
+                            }
+                            {this.state.role === 'Employee' && this.props.review.status === 'Open' &&
+                              <div className="alert alert-info">
+                                Your supervisor has not yet released their feedback for your response.
+                              </div>
+                            }
+                            {this.state.role === 'Employee' && this.props.review.status === 'Acknowledged' &&
+                              <div className="alert alert-info">
+                                You have acknowledged this check-in. When your supervisor closes the check-in, it will appear in your HR record.
+                              </div>
+                            }
+                          </fieldset>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </form>
+              }
+              {this.state.role === 'Supervisor' &&
+                <div>
+                  <Link style={{ fontSize: '20px' }} to={{ pathname: '/', query: { emp: this.props.review.employee_id, mode: 'check-ins' } }}>Back to {this.props.review.employee_name}&apos;s check-ins<br /></Link>
+                  <Link style={{ fontSize: '20px' }} to={{ pathname: '/', query: { mode: 'employees' } }}>Back to all my employees</Link>
+                </div>
+              }
+              {this.state.role === 'Employee' &&
+                <Link style={{ fontSize: '20px' }} to={{ pathname: '/', query: { mode: 'check-ins' } }}>Back to my check-ins</Link>
+              }
             </div>
-          </form>
-        }
-        {this.state.role === 'Supervisor' &&
-          <div>
-            <Link style={{ fontSize: '20px' }} to={{ pathname: '/', query: { emp: this.props.review.employee_id, mode: 'check-ins' } }}>Back to {this.props.review.employee_name}&apos;s check-ins<br /></Link>
-            <Link style={{ fontSize: '20px' }} to={{ pathname: '/', query: { mode: 'employees' } }}>Back to all my employees</Link>
-          </div>
-        }
-        {this.state.role === 'Employee' &&
-          <Link style={{ fontSize: '20px' }} to={{ pathname: '/', query: { mode: 'check-ins' } }}>Back to my check-ins</Link>
-        }
-      </div>
+
+          );
+        }}
+      </Mutation>
     );
   }
 }
@@ -504,50 +555,4 @@ Review.propTypes = {
   review: PropTypes.shape(reviewShape), // eslint-disable-line
 };
 
-const submitReview = gql`
-  mutation updateReview($id: Int, $reviewInput: ReviewInput!) {
-    updateReview (id: $id, review: $reviewInput) {
-      id
-      status
-      status_date
-      supervisor_id
-      employee_id
-      position
-      periodStart
-      periodEnd
-      reviewer_name
-      employee_name
-      questions {
-        id
-        type
-        question
-        answer
-        required
-      }
-      responses {
-        question_id
-        Response
-      }
-    }
-  }
-`;
-
-const ReviewGraphQL = graphql(submitReview, {
-  props: ({ mutate }) => ({
-    submit: (reviewData, auto, saveId) => mutate({
-      variables: { id: reviewData.id, reviewInput: reviewData.reviewInput },
-    }).then(({ data }) => {
-      if (auto !== true) {
-        browserHistory.push(['/?emp=', data.updateReview.employee_id, '&mode=check-ins'].join(''));
-      } else {
-        showSaveSuccess(saveId);
-      }
-    }).catch((error) => {
-      document.getElementById('errorDetails').innerHTML = '<span>Error details: </span>' + error;
-      document.getElementById('serverError').style.display = 'block';
-      scrollTo(document.body, 0, 100);
-    }),
-  }),
-})(Review);
-
-export default withApollo(ReviewGraphQL);
+export default Review;

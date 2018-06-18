@@ -45,15 +45,15 @@ const dataColumnsCurrent = [
     accessor: (review) => {
       switch (review.status) {
         case 'Open':
-          return <span>Waiting for supervisor comments</span>
+          return <span>Waiting for supervisor comments</span>;
         case 'Ready':
-          return <span>Waiting for employee acknowledgement</span>
+          return <span>Waiting for employee acknowledgement</span>;
         case 'Acknowledged':
-          return <span>Waiting for supervisor to finalize</span>
+          return <span>Waiting for supervisor to finalize</span>;
         case 'Closed':
-          return <span>Completed</span>
+          return <span>Completed</span>;
         default:
-          return <span></span>
+          return <span></span>;
       }
     },
     minWidth: 300,
@@ -81,7 +81,7 @@ const dataColumns = [
     Header: 'Supervisor',
     accessor: 'reviewer_name',
     minWidth: 300,
-  }
+  },
 ];
 
 const GET_LOGGED_IN_EMPLOYEE = gql`

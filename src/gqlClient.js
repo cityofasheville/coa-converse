@@ -1,6 +1,7 @@
 import { ApolloClient } from 'apollo-client';
 import fetch from 'unfetch';
-import firebase from 'firebase';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 import { createHttpLink } from 'apollo-link-http';
 import { ApolloLink } from 'apollo-link';
 import { setContext } from 'apollo-link-context';

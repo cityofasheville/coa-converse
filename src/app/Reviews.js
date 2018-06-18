@@ -48,7 +48,7 @@ const GET_REVIEWS = gql`
   }
 `;
 
-const Reviews = (props) => (
+const Reviews = props => (
   <Query
     query={GET_REVIEWS}
     variables={{

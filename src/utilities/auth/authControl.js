@@ -1,6 +1,7 @@
 
 import React from 'react';
-import firebase from 'firebase';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 import gql from 'graphql-tag';
 import { Query, Mutation } from 'react-apollo';
 import LoadingAnimation from '../../shared/LoadingAnimation';

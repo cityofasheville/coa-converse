@@ -141,19 +141,12 @@ class Review extends React.Component {
     this.handleModalContinue = this.handleModalContinue.bind(this);
   }
 
-  // componentDidMount() {
-  //   if (this.state.answersEditable || this.state.responsesEditable) {
-  //     //autoSaveInterval = setInterval(() => this.handleSubmit(submitReview, true), 5000);
-  //     //setTimeout(() => showReminder(), 10000);
-  //   }
-  // }
+  shouldComponentUpdate() {
+    return false;
+  }
 
   componentWillUnmount() {
     clearInterval(autoSaveInterval);
-  }
-
-  shouldComponentUpdate() {
-    return false;
   }
 
   handleOpenModal() {
@@ -176,7 +169,6 @@ class Review extends React.Component {
   }
 
   handleSubmit(submitFunction, auto) {
-    console.log('saving');
     this.setState({ stayOnPageAfterSave: this.state.actionRadio === 'saveprogress' });
     if (auto === true) {
       this.setState({ stayOnPageAfterSave: true });
@@ -303,12 +295,11 @@ class Review extends React.Component {
         {(submit, { loading, error, data }) => {
           if (this.state.answersEditable || this.state.responsesEditable) {
             if (autoSaveInterval === null) {
-              console.log('set interval');
               autoSaveInterval = setInterval(() => {
                 if (this.state.changesSinceLastSave > 0) {
                   this.handleSubmit(submit, true);
                 }
-              }, 5000);
+              }, 30000);
             }
           }
           return (

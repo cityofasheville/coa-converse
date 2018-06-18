@@ -32,12 +32,12 @@ const getMainReviewResponse = (responses) => {
 };
 
 const showSaveSuccess = (id) => {
-  document.getElementById(id).style.display = 'block';
-  //document.querySelectorAll("*[data-type='saveSuccess']").forEach((item) => { item.style.display = 'block' });
-  setTimeout(() => {
-    //document.querySelectorAll("*[data-type='saveSuccess']").forEach((item) => { item.style.display = 'none' });
-    document.getElementById(id).style.display = 'none';
-  }, 3000);
+  if (document.getElementById(id)) {
+    document.getElementById(id).style.display = 'block';
+    setTimeout(() => {
+      document.getElementById(id).style.display = 'none';
+    }, 3000);
+  }
 };
 
 const validate = (state, onSubmit) => {
@@ -332,7 +332,7 @@ class Review extends React.Component {
                           </p>
                         </div>
                       </div>
-                      <div className="form-group" hidden={!(this.state.answersEditable || this.state.responsesEditable)} style={{ position: 'fixed', bottom: '2%', right: '5%', zIndex: '1' }}>
+                      {/* <div className="form-group" hidden={!(this.state.answersEditable || this.state.responsesEditable)} style={{ position: 'fixed', bottom: '2%', right: '5%', zIndex: '1' }}>
                         <div className="alert alert-info alert-xs" style={{ paddingBottom: '20px', paddingLeft: '5px' }}>
                           <span className="alert alert-info alert-xs" style={{ padding: '3px' }} data-type="saveSuccess" id="saveSuccess1" hidden>
                             Progress successfully saved.
@@ -350,7 +350,7 @@ class Review extends React.Component {
                             </div>
                           </div>
                         </div>
-                      </div>
+                      </div> */}
                       <div className="form-group">
                         <fieldset className="reviewQuestionFieldset">
                           <legend>Check-in Details</legend>

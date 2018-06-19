@@ -114,6 +114,7 @@ class Review extends React.Component {
       modalIsOpen: false,
       stayOnPageAfterSave: true,
       changesSinceLastSave: 0,
+      activeSaveId: 'saveSuccess2',
     };
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleEndDateChange = this.handleEndDateChange.bind(this);
@@ -123,7 +124,10 @@ class Review extends React.Component {
     this.handleModalContinue = this.handleModalContinue.bind(this);
   }
 
-  shouldComponentUpdate() {
+  shouldComponentUpdate(nextProps, nextState) {
+    if (this.state.actionRadio !== nextState.actionRadio) {
+      return true;
+    }
     return false;
   }
 
@@ -149,10 +153,15 @@ class Review extends React.Component {
     this.setState({ modalIsOpen: false });
   }
 
-  handleSubmit(submitFunction, auto) {
+  handleSubmit(submitFunction, auto, saveId) {
     this.setState({ stayOnPageAfterSave: this.state.actionRadio === 'saveprogress' });
     if (auto === true) {
       this.setState({ stayOnPageAfterSave: true });
+    }
+    if (saveId !== undefined) {
+      this.setState({ activeSaveId: 'saveSuccess1' });
+    } else {
+      this.setState({ activeSaveId: 'saveSuccess2' });
     }
     let newStatus = this.props.review.status;
     if (auto !== true) {
@@ -247,6 +256,9 @@ class Review extends React.Component {
     this.setState({ validationErrors: validationErrors });
     const invalid = validationErrors.startDate || validationErrors.endDate || validationErrors.questions.length > 0 || validationErrors.responses.length > 0;
     this.setState({ formError: invalid });
+    if (invalid) {
+      document.getElementById('formValidationError').style.display = 'block';
+    }
     return invalid;
   }
 
@@ -267,8 +279,14 @@ class Review extends React.Component {
             browserHistory.push(['/?emp=', data.updateReview.employee_id, '&mode=check-ins'].join(''));
           }
           this.setState({ changesSinceLastSave: 0 });
-          if (document.getElementById('saveSuccess2')) {
-            showSaveSuccess('saveSuccess2');
+          if (document.getElementById(this.state.activeSaveId)) {
+            showSaveSuccess(this.state.activeSaveId);
+          }
+          if (document.getElementById('formValidationError')) {
+            document.getElementById('formValidationError').style.display = 'none';
+          }
+          if (document.getElementById('serverError')) {
+            document.getElementById('serverError').style.display = 'none';
           }
         }}
         ignoreResults
@@ -320,10 +338,10 @@ class Review extends React.Component {
                         <button className="btn btn-primary btn-xs hidden pull-right" type="button" id="minus" style={{ position: 'relative', top: '-10px', right: '-10px' }} onClick={() => { document.getElementById('autosaveWarningText').classList.toggle('show'); document.getElementById('minus').classList.toggle('hidden'); document.getElementById('plus').classList.toggle('hidden'); }}>
                           -
                         </button>
-                        <input type="button" value="Save your work" className="btn btn-primary btn-xs pull-right" onClick={() => this.handleSubmit(submit, true)} style={{ position: 'relative', top: '-10px', right: '-2px', marginBottom: '3px' }} ></input>
+                        <input type="button" value="Save your work" className="btn btn-primary btn-xs pull-right" onClick={() => this.handleSubmit(submit, true, 'saveSuccess1')} style={{ position: 'relative', top: '-10px', right: '-2px', marginBottom: '3px' }} ></input>
                         <div className="collapse" id="autosaveWarningText">
                           <div className="card card-body">
-                            Autosave has not yet been implemented.<br /> Remember to save your progress frequently.
+                            Autosave has been implemented.<br /> However you may still wish to save your progress frequently.
                           </div>
                         </div>
                       </div>
@@ -400,7 +418,7 @@ class Review extends React.Component {
                                 </p>
                               </div>
                               <input type="button" className="btn btn-primary" value="Save" onClick={() => this.handleSubmit(submit)} />
-                              <span hidden={!this.state.formError} style={{ color: 'red', marginLeft: '5px' }}>Required fields are missing. You must supply a Date of check-in and fill in at least one section before you can submit this check-in for employee input.</span>
+                              <span id="formValidationError" style={{ color: 'red', marginLeft: '5px', display: 'none' }}>Required fields are missing. You must supply a Date of check-in and fill in at least one section before you can submit this check-in for employee input.</span>
                             </div>
                           }
                           {this.state.role === 'Supervisor' && this.props.review.status === 'Acknowledged' &&
@@ -452,7 +470,7 @@ class Review extends React.Component {
                                 </p>
                               </div>
                               <input type="button" className="btn btn-primary" value="Save" onClick={() => this.handleSubmit(submit)} />
-                              <span hidden={!this.state.formError} style={{ color: 'red', marginLeft: '5px' }}>Required fields are missing. You must complete all required fields before you can submit your response to your supervisor.</span>
+                              <span id="formValidationError" style={{ color: 'red', marginLeft: '5px', display: 'none' }}>Required fields are missing. You must complete all required fields before you can submit your response to your supervisor.</span>
                             </div>
                           }
                           {this.state.role === 'Employee' && this.props.review.status === 'Open' &&

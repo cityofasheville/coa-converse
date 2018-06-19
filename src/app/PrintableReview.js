@@ -23,11 +23,13 @@ const getMainReviewResponse = (responses) => {
   return null;
 }
 
-const PrintableReview = props => (
-  <div>
+const PrintableReview = (props) => {
+  const periodStart = props.review.status === 'Closed' ? props.review.previousReviewDate : props.lastReviewed;
+
+  return (<div>
     <div className="row form-horizontal">
       <h1>Check-in between {props.review.employee_name} <br /> and supervisor {props.review.reviewer_name}</h1>
-      <Link className="pull-right" style={{ fontSize: '20px' }} to={{ pathname: 'check-in', query: {emp: props.review.employee_id, 'check-in': props.review.id, printable: 'no'}} }>Back to check-in</Link>
+      <Link className="pull-right" style={{ fontSize: '20px' }} to={{ pathname: 'check-in', query: { emp: props.review.employee_id, 'check-in': props.review.id, printable: 'no' } }}>Back to check-in</Link>
       <div className="col-sm-12">
         <div className="form-group">
           <fieldset className="reviewQuestionFieldset">
@@ -35,13 +37,13 @@ const PrintableReview = props => (
             <div className="col-sm-12" style={{ marginBottom: '10px' }}>
               <label htmlFor="startDate" className="col-sm-4" style={{ textAlign: 'right' }}>Previous check-in completed: </label>
               <div className="col-sm-8">
-                <span>{!(props.review.status === 'Closed' ? props.review.previousReviewDate : props.lastReviewed) ? 'Never' : moment.utc(props.review.periodStart).format('M/DD/YYYY')} </span>
+                <span>{(!periodStart || moment.utc(periodStart).format('M/DD/YYYY') === '1/01/1970') ? 'Never' : moment.utc(periodStart).format('M/DD/YYYY')}</span>
               </div>
             </div>
             <div className="col-sm-12">
               <label htmlFor="endDate" className="col-sm-4" style={{ textAlign: 'right' }}>Date of this check-in: </label>
               <div className="col-sm-8">
-                 <span>{moment.utc(props.review.periodEnd).format('M/DD/YYYY')} </span>
+                <span>{moment.utc(props.review.periodEnd).format('M/DD/YYYY')} </span>
               </div>
             </div>
           </fieldset>
@@ -79,10 +81,21 @@ const PrintableReview = props => (
             }
           </fieldset>
         </div>
+        {props.review.empoyee_id === props.userId &&
+          <Link style={{ fontSize: '20px' }} to={{ pathname: '/', query: { mode: 'check-ins' } }}>Back to my check-ins</Link>
+        }
+        {props.userId === props.review.supervisor_id &&
+          <div>
+            <Link style={{ fontSize: '20px' }} to={{ pathname: '/', query: { emp: props.review.employee_id, mode: 'check-ins' } }}>Back to {props.review.employee_name}&apos;s check-ins<br /></Link>
+            <Link style={{ fontSize: '20px' }} to={{ pathname: '/', query: { mode: 'employees' } }}>Back to all my employees</Link>
+          </div>
+      }
       </div>
     </div>
   </div>
 );
+
+}
 
 const questionShape = {
   id: PropTypes.number,

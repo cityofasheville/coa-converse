@@ -4,7 +4,7 @@ import firebaseui from 'firebaseui';
 import PropTypes from 'prop-types';
 import { graphql, compose, withApollo } from 'react-apollo';
 import firebase from '../firebase';
-import { UPDATE_USER } from '../utilities/auth/graphql/authMutations';
+import { UPDATE_USER, UPDATE_AUTHMODAL } from '../utilities/auth/graphql/authMutations';
 import { getUser } from '../utilities/auth/graphql/authQueries';
 import Navbar from './Navbar';
 import AuthProviderModal from '../utilities/auth/authProviderModal';
@@ -62,7 +62,11 @@ class Main extends React.Component {
         signInFlow: 'popup',
         callbacks: {
           signInSuccessWithAuthResult: () => {
-            //TODO: close the auth modal
+            this.props.updateAuthModal({
+              variables: {
+                open: false,
+              },
+            });
             return false;
           },
         },
@@ -78,7 +82,11 @@ class Main extends React.Component {
         signInFlow: 'popup',
         callbacks: {
           signInSuccessWithAuthResult: () => {
-            //TODO: close the auth modal...
+            this.props.updateAuthModal({
+              variables: {
+                open: false,
+              },
+            });
             return false;
           },
         },
@@ -109,6 +117,7 @@ Main.propTypes = {
 
 const App = compose(
   graphql(UPDATE_USER, { name: 'updateUser' }),
+  graphql(UPDATE_AUTHMODAL, { name: 'updateAuthModal' }),
   graphql(getUser, {
     props: ({ data: { user } }) => ({
       user,

@@ -9,7 +9,6 @@ import moment from 'moment';
 import DatePickerWrapper from '../shared/DatePickerWrapper';
 import Question from './Question';
 import Response from './Response';
-import PrintableReview from './PrintableReview';
 import CheckInInstructions from './CheckInInstructions';
 
 const getResponse = (questionId, responses) => {
@@ -64,23 +63,6 @@ const validate = (state, onSubmit) => {
     questions: onSubmit ? invalidQuestions : state.questions,
     responses: onSubmit ? [] : state.responses,
   };
-};
-
-const changesPresent = (state, original) => {
-  if (state.periodEnd !== original.periodEnd) {
-    return true;
-  }
-  for (let i = 0; i < state.questions.length; i += 1) {
-    if (state.questions[i].answer !== original.questions[i].answer) {
-      return true;
-    }
-  }
-  for (let i = 0; i < state.responses.length; i += 1) {
-    if (state.responses[i].Response !== original.responses[i].Response) {
-      return true;
-    }
-  }
-  return false;
 };
 
 const submitReview = gql`
@@ -149,13 +131,12 @@ class Review extends React.Component {
     clearInterval(autoSaveInterval);
   }
 
-  handleOpenModal() {
-    if (changesPresent(this.state, this.props.review)) {
-      this.setState({ modalIsOpen: true });
-    } else {
-      const path = ['check-in?emp=', this.props.review.employee_id, '&check-in=', this.props.review.id, '&printable=yes'].join('');
-      browserHistory.push(path);
+  handleOpenModal(submitFunction) {
+    if (this.state.changesSinceLastSave > 0) {
+      this.handleSubmit(submitFunction, true);
     }
+    const path = ['check-in?emp=', this.props.review.employee_id, '&check-in=', this.props.review.id, '&printable=yes'].join('');
+    browserHistory.push(path);
   }
 
   handleModalContinue() {
@@ -304,197 +285,192 @@ class Review extends React.Component {
           }
           return (
             <div>
-              {this.props.location.query.printable === 'yes' &&
-                <PrintableReview review={this.props.review} />
-              }
-              {this.props.location.query.printable !== 'yes' &&
-                <form>
-                  <div className="row form-horizontal">
-                    <h1>Check-in between {this.props.review.employee_name} <br /> and supervisor {this.props.review.reviewer_name}</h1>
-                    <Link className="pull-right" style={{ fontSize: '20px' }} onClick={this.handleOpenModal}>Printable Version</Link>
-                    <Modal
-                      isOpen={this.state.modalIsOpen}
-                      contentLabel="Discard check-in changes?"
-                    >
-                      <h1 ref={subtitle => this.subtitle = subtitle}>Discard changes to this check-in?</h1>
-                      <p>There are unsaved changes to this check-in. Navigating away from this page will cause these changes to be lost.</p>
-                        <button className="btn btn-primary" onClick={this.handleCloseModal}>Cancel</button>
-                        <button className="btn btn-warning btn-sm" style={{ marginLeft: '10px' }} onClick={this.handleModalContinue}>Disgard changes and proceed to printable check-in</button>
-                    </Modal>
-                    <div className="col-sm-12">
-                      <div className="form-group" id="serverError" hidden>
-                        <div className="alert alert-danger alert-sm">
-                          <p>
-                            There was an error processing your submission. Please contact <a href="mailto:Helpdesk@ashevillenc.gov" target="_blank" style={{ color: '#fff', textDecoration: 'underline' }}>help desk</a> and inform them of the time and date you tried to submit the form.
-                          </p>
-                          <p id="errorDetails">
-                            ERROR
-                          </p>
-                        </div>
+              <form>
+                <div className="row form-horizontal">
+                  <h1>Check-in between {this.props.review.employee_name} <br /> and supervisor {this.props.review.reviewer_name}</h1>
+                  <Link className="pull-right" style={{ fontSize: '20px' }} onClick={() => this.handleOpenModal(submit)}>Printable Version</Link>
+                  <Modal
+                    isOpen={this.state.modalIsOpen}
+                    contentLabel="Discard check-in changes?"
+                  >
+                    <h1 ref={subtitle => this.subtitle = subtitle}>Discard changes to this check-in?</h1>
+                    <p>There are unsaved changes to this check-in. Navigating away from this page will cause these changes to be lost.</p>
+                      <button className="btn btn-primary" onClick={this.handleCloseModal}>Cancel</button>
+                      <button className="btn btn-warning btn-sm" style={{ marginLeft: '10px' }} onClick={this.handleModalContinue}>Disgard changes and proceed to printable check-in</button>
+                  </Modal>
+                  <div className="col-sm-12">
+                    <div className="form-group" id="serverError" hidden>
+                      <div className="alert alert-danger alert-sm">
+                        <p>
+                          There was an error processing your submission. Please contact <a href="mailto:Helpdesk@ashevillenc.gov" target="_blank" style={{ color: '#fff', textDecoration: 'underline' }}>help desk</a> and inform them of the time and date you tried to submit the form.
+                        </p>
+                        <p id="errorDetails">
+                          ERROR
+                        </p>
                       </div>
-                      {/* <div className="form-group" hidden={!(this.state.answersEditable || this.state.responsesEditable)} style={{ position: 'fixed', bottom: '2%', right: '5%', zIndex: '1' }}>
-                        <div className="alert alert-info alert-xs" style={{ paddingBottom: '20px', paddingLeft: '5px' }}>
-                          <span className="alert alert-info alert-xs" style={{ padding: '3px' }} data-type="saveSuccess" id="saveSuccess1" hidden>
-                            Progress successfully saved.
-                          </span>
-                          <button className="btn btn-primary btn-xs pull-right" style={{ position: 'relative', top: '-10px', right: '-10px' }} type="button" id="plus" onClick={() => { document.getElementById('autosaveWarningText').classList.toggle('show'); document.getElementById('plus').classList.toggle('hidden'); document.getElementById('minus').classList.toggle('hidden'); }}>
-                            +
-                          </button>
-                          <button className="btn btn-primary btn-xs hidden pull-right" type="button" id="minus" style={{ position: 'relative', top: '-10px', right: '-10px' }} onClick={() => { document.getElementById('autosaveWarningText').classList.toggle('show'); document.getElementById('minus').classList.toggle('hidden'); document.getElementById('plus').classList.toggle('hidden'); }}>
-                            -
-                          </button>
-                          <input type="button" value="Save your work" className="btn btn-primary btn-xs pull-right" onClick={() => this.handleSubmit(submit, true)} style={{ position: 'relative', top: '-10px', right: '-2px', marginBottom: '3px' }} ></input>
-                          <div className="collapse" id="autosaveWarningText">
-                            <div className="card card-body">
-                              Autosave has not yet been implemented.<br /> Remember to save your progress frequently.
-                            </div>
+                    </div>
+                    <div className="form-group" hidden={!(this.state.answersEditable || this.state.responsesEditable)} style={{ position: 'fixed', bottom: '2%', right: '5%', zIndex: '1' }}>
+                      <div className="alert alert-info alert-xs" style={{ paddingBottom: '20px', paddingLeft: '5px' }}>
+                        <span className="alert alert-info alert-xs" style={{ padding: '3px' }} data-type="saveSuccess" id="saveSuccess1" hidden>
+                          Progress successfully saved.
+                        </span>
+                        <button className="btn btn-primary btn-xs pull-right" style={{ position: 'relative', top: '-10px', right: '-10px' }} type="button" id="plus" onClick={() => { document.getElementById('autosaveWarningText').classList.toggle('show'); document.getElementById('plus').classList.toggle('hidden'); document.getElementById('minus').classList.toggle('hidden'); }}>
+                          +
+                        </button>
+                        <button className="btn btn-primary btn-xs hidden pull-right" type="button" id="minus" style={{ position: 'relative', top: '-10px', right: '-10px' }} onClick={() => { document.getElementById('autosaveWarningText').classList.toggle('show'); document.getElementById('minus').classList.toggle('hidden'); document.getElementById('plus').classList.toggle('hidden'); }}>
+                          -
+                        </button>
+                        <input type="button" value="Save your work" className="btn btn-primary btn-xs pull-right" onClick={() => this.handleSubmit(submit, true)} style={{ position: 'relative', top: '-10px', right: '-2px', marginBottom: '3px' }} ></input>
+                        <div className="collapse" id="autosaveWarningText">
+                          <div className="card card-body">
+                            Autosave has not yet been implemented.<br /> Remember to save your progress frequently.
                           </div>
                         </div>
-                      </div> */}
-                      <div className="form-group">
-                        <fieldset className="reviewQuestionFieldset">
-                          <legend>Check-in Details</legend>
-                          <div className="col-sm-12" style={{ marginBottom: '10px' }}>
-                            <label htmlFor="startDate" className="col-sm-4" style={{ textAlign: 'right' }}>Previous check-in completed: </label>
-                            <div className={dateErrors.startDate ? 'col-sm-8 invalid' : 'col-xs-8'}>
-                              <span>{(!this.state.periodStart || moment.utc(this.state.periodStart).format('M/DD/YYYY') === '1/01/1970') ? 'Never' : moment.utc(this.state.periodStart).format('M/DD/YYYY')}</span>
-                            </div>
+                      </div>
+                    </div>
+                    <div className="form-group">
+                      <fieldset className="reviewQuestionFieldset">
+                        <legend>Check-in Details</legend>
+                        <div className="col-sm-12" style={{ marginBottom: '10px' }}>
+                          <label htmlFor="startDate" className="col-sm-4" style={{ textAlign: 'right' }}>Previous check-in completed: </label>
+                          <div className={dateErrors.startDate ? 'col-sm-8 invalid' : 'col-xs-8'}>
+                            <span>{(!this.state.periodStart || moment.utc(this.state.periodStart).format('M/DD/YYYY') === '1/01/1970') ? 'Never' : moment.utc(this.state.periodStart).format('M/DD/YYYY')}</span>
                           </div>
-                          <div className={dateErrors.endDate ? 'col-sm-12 invalid' : 'col-sm-12'}>
-                            <label htmlFor="endDate" className="col-sm-4" style={{ textAlign: 'right' }}>Date of this check-in: </label>
-                            <div className="col-sm-8">
-                              {this.state.answersEditable &&
-                                <DatePickerWrapper selected={moment.utc(this.state.periodEnd)} id="endDate" onChange={value => this.handleEndDateChange(value, submit)} />
-                              }
-                              {this.state.answersEditable && dateErrors.endDate &&
-                                <span style={{ color: 'red', fontWeight: 'bold', marginLeft: '10px' }}>&apos;Date of this check-in&apos; is required</span>
-                              }
-                              {!this.state.answersEditable &&
-                                <span>{moment.utc(this.state.periodEnd).format('M/DD/YYYY')}</span>
-                              }
-                            </div>
-                          </div>
-                        </fieldset>
-                      </div>
-                      <CheckInInstructions />
-                      <div className="form-group">
-                        {
-                          this.props.review.questions.map((question, index) => {
-                            const resp = getResponse(question.id, this.props.review.responses);
-                            return (
-                              <div key={['question', index].join('_')}>
-                                <Question question={question} editable={this.state.answersEditable} onBlur={question.type === 'Text' ? (event => (this.handleTextEditorChange(event, submit))) : (value => (this.handleRadioQuestionChange(value, question.id, submit)))} />
-                                {resp !== null &&
-                                  <Response response={resp} editable={this.state.responsesEditable} onChange={event => (this.handleTextEditorChange(event, submit))} />
-                                }
-                              </div>
-                            );
-                          })
-                        }
-                      </div>
-                      <div className="form-group">
-                        <Response response={getMainReviewResponse(this.props.review.responses)} standalone editable={this.state.responsesEditable} onChange={event => (this.handleTextEditorChange(event, submit))} />
-                      </div>
-                      {this.props.review.status !== 'Closed' && this.state.role !== 'Viewer' &&
-                        <div className="form-group">
-                          <fieldset className="reviewQuestionFieldset">
-                            <legend>Action</legend>
-                            {this.state.role === 'Supervisor' && this.props.review.status === 'Open' &&
-                              <div>
-                                <p><i>Please discuss your feedback with your employee before submission for their input.</i></p>
-                                <RadioGroup
-                                  name="workflow"
-                                  selectedValue={this.state.actionRadio}
-                                  onChange={val => (this.setState({ actionRadio: val }))}
-                                >
-                                  <label>
-                                    <Radio value="saveprogress" />Save progress
-                                  </label>
-                                  <label>
-                                    <Radio value="saveonly" />Save &amp; exit
-                                  </label>
-                                  <label>
-                                    <Radio value="Ready" />Submit for employee input
-                                  </label>
-                                </RadioGroup>
-                                <div className="alert alert-success alert-sm" data-type="saveSuccess" id="saveSuccess2" hidden>
-                                  <p>
-                                    Your progress was saved.
-                                  </p>
-                                </div>
-                                <input type="button" className="btn btn-primary" value="Save" onClick={() => this.handleSubmit(submit)} />
-                                <span hidden={!this.state.formError} style={{ color: 'red', marginLeft: '5px' }}>Required fields are missing. You must supply a Date of check-in and fill in at least one section before you can submit this check-in for employee input.</span>
-                              </div>
-                            }
-                            {this.state.role === 'Supervisor' && this.props.review.status === 'Acknowledged' &&
-                              <div>
-                                <RadioGroup
-                                  name="workflow"
-                                  selectedValue={this.state.actionRadio}
-                                  onChange={val => (this.setState({ actionRadio: val }))}
-                                >
-                                  <label>
-                                    <Radio value="Open" />Re-open
-                                  </label>                          
-                                  <label>
-                                    <Radio value="Closed" />Submit to HR record
-                                  </label>
-                                </RadioGroup>
-                                <input type="button" className="btn btn-primary" value="Save" onClick={() => this.handleSubmit(submit)} />
-                              </div>
-                            }
-                            {this.state.role === 'Supervisor' && this.props.review.status === 'Ready' &&
-                              <div className="alert alert-info">
-                                You must wait for your employee to respond before further actions can be taken.
-                              </div>
-                            }
-                            {this.state.role === 'Employee' && this.props.review.status === 'Ready' &&
-                              <div>
-                                <p><i>By acknowledging, you affirm that you have read your supervisor&apos;s feedback and discussed it with your supervisor.</i></p>
-                                <RadioGroup
-                                  name="workflow"
-                                  selectedValue={this.state.actionRadio}
-                                  onChange={val => (this.setState({ actionRadio: val }))}
-                                >
-                                  <label>
-                                    <Radio value="saveprogress" />Save progress
-                                  </label>
-                                  <label>
-                                    <Radio value="saveonly" />Save &amp; exit
-                                  </label>
-                                  <label>
-                                    <Radio value="Acknowledged" />Acknowledge
-                                  </label>
-                                  <label>
-                                    <Radio value="Open" />Further discussion requested
-                                  </label>                          
-                                </RadioGroup>
-                                <div className="alert alert-success alert-sm" data-type="saveSuccess" id="saveSuccess2" hidden>
-                                  <p>
-                                    Your progress was saved.
-                                  </p>
-                                </div>
-                                <input type="button" className="btn btn-primary" value="Save" onClick={() => this.handleSubmit(submit)} />
-                                <span hidden={!this.state.formError} style={{ color: 'red', marginLeft: '5px' }}>Required fields are missing. You must complete all required fields before you can submit your response to your supervisor.</span>
-                              </div>
-                            }
-                            {this.state.role === 'Employee' && this.props.review.status === 'Open' &&
-                              <div className="alert alert-info">
-                                Your supervisor has not yet released their feedback for your response.
-                              </div>
-                            }
-                            {this.state.role === 'Employee' && this.props.review.status === 'Acknowledged' &&
-                              <div className="alert alert-info">
-                                You have acknowledged this check-in. When your supervisor closes the check-in, it will appear in your HR record.
-                              </div>
-                            }
-                          </fieldset>
                         </div>
+                        <div className={dateErrors.endDate ? 'col-sm-12 invalid' : 'col-sm-12'}>
+                          <label htmlFor="endDate" className="col-sm-4" style={{ textAlign: 'right' }}>Date of this check-in: </label>
+                          <div className="col-sm-8">
+                            {this.state.answersEditable &&
+                              <DatePickerWrapper selected={moment.utc(this.state.periodEnd)} id="endDate" onChange={value => this.handleEndDateChange(value, submit)} />
+                            }
+                            {this.state.answersEditable && dateErrors.endDate &&
+                              <span style={{ color: 'red', fontWeight: 'bold', marginLeft: '10px' }}>&apos;Date of this check-in&apos; is required</span>
+                            }
+                            {!this.state.answersEditable &&
+                              <span>{moment.utc(this.state.periodEnd).format('M/DD/YYYY')}</span>
+                            }
+                          </div>
+                        </div>
+                      </fieldset>
+                    </div>
+                    <CheckInInstructions />
+                    <div className="form-group">
+                      {
+                        this.props.review.questions.map((question, index) => {
+                          const resp = getResponse(question.id, this.props.review.responses);
+                          return (
+                            <div key={['question', index].join('_')}>
+                              <Question question={question} editable={this.state.answersEditable} onBlur={question.type === 'Text' ? (event => (this.handleTextEditorChange(event, submit))) : (value => (this.handleRadioQuestionChange(value, question.id, submit)))} />
+                              {resp !== null &&
+                                <Response response={resp} editable={this.state.responsesEditable} onChange={event => (this.handleTextEditorChange(event, submit))} />
+                              }
+                            </div>
+                          );
+                        })
                       }
                     </div>
+                    <div className="form-group">
+                      <Response response={getMainReviewResponse(this.props.review.responses)} standalone editable={this.state.responsesEditable} onChange={event => (this.handleTextEditorChange(event, submit))} />
+                    </div>
+                    {this.props.review.status !== 'Closed' && this.state.role !== 'Viewer' &&
+                      <div className="form-group">
+                        <fieldset className="reviewQuestionFieldset">
+                          <legend>Action</legend>
+                          {this.state.role === 'Supervisor' && this.props.review.status === 'Open' &&
+                            <div>
+                              <p><i>Please discuss your feedback with your employee before submission for their input.</i></p>
+                              <RadioGroup
+                                name="workflow"
+                                selectedValue={this.state.actionRadio}
+                                onChange={val => (this.setState({ actionRadio: val }))}
+                              >
+                                <label>
+                                  <Radio value="saveprogress" />Save progress
+                                </label>
+                                <label>
+                                  <Radio value="saveonly" />Save &amp; exit
+                                </label>
+                                <label>
+                                  <Radio value="Ready" />Submit for employee input
+                                </label>
+                              </RadioGroup>
+                              <div className="alert alert-success alert-sm" data-type="saveSuccess" id="saveSuccess2" hidden>
+                                <p>
+                                  Your progress was saved.
+                                </p>
+                              </div>
+                              <input type="button" className="btn btn-primary" value="Save" onClick={() => this.handleSubmit(submit)} />
+                              <span hidden={!this.state.formError} style={{ color: 'red', marginLeft: '5px' }}>Required fields are missing. You must supply a Date of check-in and fill in at least one section before you can submit this check-in for employee input.</span>
+                            </div>
+                          }
+                          {this.state.role === 'Supervisor' && this.props.review.status === 'Acknowledged' &&
+                            <div>
+                              <RadioGroup
+                                name="workflow"
+                                selectedValue={this.state.actionRadio}
+                                onChange={val => (this.setState({ actionRadio: val }))}
+                              >
+                                <label>
+                                  <Radio value="Open" />Re-open
+                                </label>                          
+                                <label>
+                                  <Radio value="Closed" />Submit to HR record
+                                </label>
+                              </RadioGroup>
+                              <input type="button" className="btn btn-primary" value="Save" onClick={() => this.handleSubmit(submit)} />
+                            </div>
+                          }
+                          {this.state.role === 'Supervisor' && this.props.review.status === 'Ready' &&
+                            <div className="alert alert-info">
+                              You must wait for your employee to respond before further actions can be taken.
+                            </div>
+                          }
+                          {this.state.role === 'Employee' && this.props.review.status === 'Ready' &&
+                            <div>
+                              <p><i>By acknowledging, you affirm that you have read your supervisor&apos;s feedback and discussed it with your supervisor.</i></p>
+                              <RadioGroup
+                                name="workflow"
+                                selectedValue={this.state.actionRadio}
+                                onChange={val => (this.setState({ actionRadio: val }))}
+                              >
+                                <label>
+                                  <Radio value="saveprogress" />Save progress
+                                </label>
+                                <label>
+                                  <Radio value="saveonly" />Save &amp; exit
+                                </label>
+                                <label>
+                                  <Radio value="Acknowledged" />Acknowledge
+                                </label>
+                                <label>
+                                  <Radio value="Open" />Further discussion requested
+                                </label>                          
+                              </RadioGroup>
+                              <div className="alert alert-success alert-sm" data-type="saveSuccess" id="saveSuccess2" hidden>
+                                <p>
+                                  Your progress was saved.
+                                </p>
+                              </div>
+                              <input type="button" className="btn btn-primary" value="Save" onClick={() => this.handleSubmit(submit)} />
+                              <span hidden={!this.state.formError} style={{ color: 'red', marginLeft: '5px' }}>Required fields are missing. You must complete all required fields before you can submit your response to your supervisor.</span>
+                            </div>
+                          }
+                          {this.state.role === 'Employee' && this.props.review.status === 'Open' &&
+                            <div className="alert alert-info">
+                              Your supervisor has not yet released their feedback for your response.
+                            </div>
+                          }
+                          {this.state.role === 'Employee' && this.props.review.status === 'Acknowledged' &&
+                            <div className="alert alert-info">
+                              You have acknowledged this check-in. When your supervisor closes the check-in, it will appear in your HR record.
+                            </div>
+                          }
+                        </fieldset>
+                      </div>
+                    }
                   </div>
-                </form>
-              }
+                </div>
+              </form>
               {this.state.role === 'Supervisor' &&
                 <div>
                   <Link style={{ fontSize: '20px' }} to={{ pathname: '/', query: { emp: this.props.review.employee_id, mode: 'check-ins' } }}>Back to {this.props.review.employee_name}&apos;s check-ins<br /></Link>

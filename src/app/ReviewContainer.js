@@ -2,6 +2,7 @@ import React from 'react';
 import { Query } from 'react-apollo';
 import gql from 'graphql-tag';
 import Review from './Review';
+import PrintableReview from './PrintableReview';
 import LoadingAnimation from '../shared/LoadingAnimation';
 import Error from '../shared/Error';
 
@@ -76,9 +77,12 @@ const ReviewContainer = (props) => {
               if (error) return <Error message={error.message} />;
               fetched = true;
               const lastReviewed = data.employee.last_reviewed;
-              return (
-                <Review review={review} userId={loggedInEmployee.id} printable={props.location.query.printable === 'yes'} lastReviewed={lastReviewed} location={props.location} />
-              );
+              if (props.location.query.printable !== 'yes') {
+                return (
+                  <Review review={review} userId={loggedInEmployee.id} printable={props.location.query.printable === 'yes'} lastReviewed={lastReviewed} location={props.location} />
+                );
+              }
+              return <PrintableReview review={review} userId={loggedInEmployee.id} lastReviewed={lastReviewed} />;
             }}
           </Query>
         );

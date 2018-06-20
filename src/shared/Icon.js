@@ -1,9 +1,9 @@
 import React from 'react';
-const {PropTypes} = React;
+import PropTypes from 'prop-types';
 
 // https://medium.com/@david.gilbertson/icons-as-react-components-de3e33cb8792
 
-const Icon = props => {
+const Icon = (props) => {
   const styles = {
     svg: {
       display: 'inline-block',
@@ -36,7 +36,7 @@ const Icon = props => {
 };
 
 Icon.propTypes = {
-  path: PropTypes.string.isRequired,
+  path: PropTypes.string,
   size: PropTypes.number,
   color: PropTypes.string,
 };

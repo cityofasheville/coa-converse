@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import ReactTable from 'react-table';
+import AccessibleReactTable from 'accessible-react-table';
 import { Link } from 'react-router';
 import moment from 'moment';
 import Icon from '../shared/Icon';
@@ -61,7 +61,7 @@ const EmployeesTable = (props) => {
       <div className="col-sm-12">
         {employees.length > 0 &&
           <div alt="Table of supervised employees" style={{ marginTop: '10px' }}>
-            <ReactTable
+            <AccessibleReactTable
               data={employees}
               columns={dataColumns}
               pageSize={employees.length < 20 ? employees.length : 20}

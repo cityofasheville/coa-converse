@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import ReactTable from 'react-table';
+import AccessibleReactTable from 'accessible-react-table';
 import moment from 'moment';
 import { Link } from 'react-router';
 import { Query } from 'react-apollo';
@@ -24,9 +24,9 @@ const getTimeSinceLastConversation = (reviewDate, reviewable) => {
     return <span style={{ color: 'red' }}>{daysSinceLastReview} days <Icon path={IM_WARNING2} size={18} /></span>;
   }
   if (daysSinceLastReview > 21) {
-    return <span style={{ color: 'orange'}}>{daysSinceLastReview} days <Icon path={IM_HOURGLASS} size={18} /></span>;
+    return <span style={{ color: 'orange' }}>{daysSinceLastReview} days <Icon path={IM_HOURGLASS} size={18} /></span>;
   }
-  return <span>{daysSinceLastReview} days </span>
+  return <span>{daysSinceLastReview} days </span>;
 };
 
 const dataColumnsCurrent = [
@@ -122,11 +122,11 @@ const ReviewsTable = props => (
             }
             {props.reviews.length > 0 &&
               <div alt={props.current ? 'Table displaying current check-in' : 'Table of past check-ins'} style={{ marginTop: '10px' }}>
-                <ReactTable
+                <AccessibleReactTable
                   data={reviews}
                   columns={props.current ? dataColumnsCurrent : dataColumns}
                   pageSize={reviews.length < 20 ? props.reviews.length : 20}
-                  showPagination={reviews.length >= 20 ? true : false}
+                  showPagination={reviews.length >= 20}
                 />
               </div>
             }
@@ -169,6 +169,7 @@ const reviewShape = {
 ReviewsTable.propTypes = {
   reviews: PropTypes.arrayOf(PropTypes.shape(reviewShape)),
   current: PropTypes.bool,
+  reviewable: PropTypes.bool,
 };
 
 ReviewsTable.defaultProps = {

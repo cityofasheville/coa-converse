@@ -17,12 +17,12 @@ const getTimeSinceLastConversation = (employee) => {
   const today = moment.utc(new Date(), 'M/DD/YYYY');
   const daysSinceLastReview = today.diff(moment.utc(lastReviewedDate, 'M/DD/YYYY'), 'days');
   if (daysSinceLastReview > 30) {
-    return <Link to={{ pathname: 'check-in', query: { emp: employee.id } }} style={{ color: 'red' }}>{daysSinceLastReview} days <Icon path={IM_WARNING2} size={18} /></Link>
+    return <Link to={{ pathname: 'check-in', query: { emp: employee.id } }} style={{ color: 'red' }}>{daysSinceLastReview} days <Icon path={IM_WARNING2} size={18} /></Link>;
   }
   if (daysSinceLastReview > 21) {
-    return <Link to={{ pathname: 'check-in', query: { emp: employee.id } }}><span style={{ color: 'orange'}}>{daysSinceLastReview} days <Icon path={IM_HOURGLASS} size={18} /></span></Link>
+    return <Link to={{ pathname: 'check-in', query: { emp: employee.id } }}><span style={{ color: 'orange' }}>{daysSinceLastReview} days <Icon path={IM_HOURGLASS} size={18} /></span></Link>;
   }
-  return <Link to={{ pathname: 'check-in', query: { emp: employee.id } }}><span className="text-primary">{daysSinceLastReview} days </span></Link>
+  return <Link to={{ pathname: 'check-in', query: { emp: employee.id } }}><span className="text-primary">{daysSinceLastReview} days </span></Link>;
 };
 
 const dataColumns = [
@@ -30,7 +30,7 @@ const dataColumns = [
     Header: 'Name',
     accessor: 'name',
     minWidth: 300,
-    Cell: (row) => (
+    Cell: row => (
       <Link to={{ pathname: '/', query: { emp: row.original.id } }}>
         <span>{row.original.name}</span>
       </Link>
@@ -39,7 +39,7 @@ const dataColumns = [
   {
     Header: (<div>Time Since<br />Last Check-in</div>),
     id: 'timeSinceLastReview',
-    accessor: (employee) => ( getTimeSinceLastConversation(employee) ),
+    accessor: employee => getTimeSinceLastConversation(employee),
     maxWidth: 200,
     minWidth: 140,
   },
@@ -48,13 +48,13 @@ const dataColumns = [
     accessor: 'last_reviewed',
     maxWidth: 200,
     minWidth: 130,
-    Cell: (row) => (
+    Cell: row => (
       <span>{!row.original.last_reviewed ? '--' : moment.utc(row.original.last_reviewed).format('M/DD/YYYY')}</span>
     ),
   },
 ];
 
-const EmployeesTable = props => {
+const EmployeesTable = (props) => {
   const employees = props.data.employee === null ? [] : props.data.employee.employees;
   return (
     <div className="row">
@@ -65,18 +65,18 @@ const EmployeesTable = props => {
               data={employees}
               columns={dataColumns}
               pageSize={employees.length < 20 ? employees.length : 20}
-              showPagination={employees.length >= 20 ? true : false}
+              showPagination={employees.length >= 20}
             />
           </div>
         }
-        {employees.length === 0 && 
+        {employees.length === 0 &&
           <div className="alert alert-warning">
             No employees found.
           </div>
         }
       </div>
     </div>
-  )
+  );
 };
 
 EmployeesTable.propTypes = {

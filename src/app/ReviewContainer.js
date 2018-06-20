@@ -1,27 +1,13 @@
 import React from 'react';
-import { graphql, compose } from 'react-apollo';
+import { Query } from 'react-apollo';
 import gql from 'graphql-tag';
 import Review from './Review';
+import PrintableReview from './PrintableReview';
 import LoadingAnimation from '../shared/LoadingAnimation';
 import Error from '../shared/Error';
 
-const ReviewContainer = (props) => {
-  if (props.reviewQuery.loading || props.lastReviewed.loading) { // eslint-disable-line react/prop-types
-    return <LoadingAnimation />;
-  }
-  if (props.reviewQuery.error) {
-    return <Error message={props.reviewQuery.error.message} />;
-  }
-  if (props.lastReviewed.error) { // eslint-disable-line react/prop-types
-    return <Error message={props.lastReviewed.error.message} /> // eslint-disable-line react/prop-types
-  }
-  return (
-    <Review review={props.reviewQuery.review} userId={props.reviewQuery.employee.id} printable={props.location.query.printable === 'yes'} lastReviewed={props.lastReviewed.employee.last_reviewed} location={props.location} />
-  );
-};
-
-const getReviewQuery = gql`
-  query getReviewQuery($id: Int, $employee_id: Int) {
+const GET_REVIEW = gql`
+  query reviewQuery($id: Int, $employee_id: Int) {
     employee {
       id
     }
@@ -52,32 +38,57 @@ const getReviewQuery = gql`
   }
 `;
 
-const getLastReviewedQuery = gql`
-  query getLastReviewedQuery($id: Int) {
+const GET_LAST_REVIEWED = gql`
+  query lastReviewed($id: Int) {
     employee (id: $id) {
       last_reviewed
     }
   }
 `;
 
-const ReviewContainerGQL = compose(
-  graphql(getReviewQuery, {
-    name: 'reviewQuery',
-    options: ownProps => ({
-      variables: {
-        id: ownProps.location.query['check-in'] || -1,
-        employee_id: ownProps.location.query.emp,
-      },
-      fetchPolicy: 'network-only',
-    }),
-  }),
-  graphql(getLastReviewedQuery, { name: 'lastReviewed',
-    options: ownProps => ({
-      variables: {
-        id: ownProps.location.query.emp,
-      },
-    }),
-  }),
-)(ReviewContainer);
+const ReviewContainer = (props) => {
+  let fetched = false;
+  return (
+    <Query
+      query={GET_REVIEW}
+      variables={{
+        id: props.location.query['check-in'] || -1,
+        employee_id: props.location.query.emp,
+      }}
+      fetchPolicy="network-only"
+      skip={fetched}
+    >
+      {({ loading, error, data }) => {
+        if (loading) return <LoadingAnimation />;
+        if (error) return <Error message={error.message} />;
+        const loggedInEmployee = data.employee;
+        const review = data.review;
 
-export default ReviewContainerGQL;
+        return (
+          <Query
+            query={GET_LAST_REVIEWED}
+            variables={{
+              id: props.location.query.emp,
+            }}
+            skip={fetched}
+          >
+            {({ loading, error, data }) => {
+              if (loading) return <LoadingAnimation />;
+              if (error) return <Error message={error.message} />;
+              fetched = true;
+              const lastReviewed = data.employee.last_reviewed;
+              if (props.location.query.printable !== 'yes') {
+                return (
+                  <Review review={review} userId={loggedInEmployee.id} printable={props.location.query.printable === 'yes'} lastReviewed={lastReviewed} location={props.location} />
+                );
+              }
+              return <PrintableReview review={review} userId={loggedInEmployee.id} lastReviewed={lastReviewed} />;
+            }}
+          </Query>
+        );
+      }}
+    </Query>);
+};
+
+export default ReviewContainer;
+

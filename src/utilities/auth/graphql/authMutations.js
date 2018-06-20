@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 
-export const updateUser = gql`
+export const UPDATE_USER = gql`
   mutation updateUser(
     $loggedIn: Boolean
     $privilege: Int
@@ -24,7 +24,7 @@ export const updateUser = gql`
   }
 `;
 
-export const updateAuthModal = gql`
+export const UPDATE_AUTHMODAL = gql`
   mutation updateAuthModal($open: Boolean) {
     updateAuthModal(open: $open) @client {
       modal

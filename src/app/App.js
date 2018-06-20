@@ -1,10 +1,10 @@
 
 import React from 'react';
-import firebase from 'firebase';
 import firebaseui from 'firebaseui';
 import PropTypes from 'prop-types';
 import { graphql, compose, withApollo } from 'react-apollo';
-import { updateUser } from '../utilities/auth/graphql/authMutations';
+import firebase from '../firebase';
+import { UPDATE_USER, UPDATE_AUTHMODAL } from '../utilities/auth/graphql/authMutations';
 import { getUser } from '../utilities/auth/graphql/authQueries';
 import Navbar from './Navbar';
 import AuthProviderModal from '../utilities/auth/authProviderModal';
@@ -15,35 +15,15 @@ const authProviders = [
   //firebase.auth.EmailAuthProvider.PROVIDER_ID,
 ];
 
-const initializeFirebaseAuthUI = () => {
-  // Initialize the FirebaseUI Widget using Firebase.
-  const authUi = new firebaseui.auth.AuthUI(firebase.auth());
-
-  // The start method will wait until the DOM is loaded.
-  authUi.start('#firebaseui-auth-container', {
-    signInSuccessUrl: '/',
-    signInOptions: authProviders,
-    signInFlow: 'popup',
-    // TODO:  Terms of service url.
-  });
-};
-
 class Main extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      authUi: new firebaseui.auth.AuthUI(firebase.auth()),
+    };
   }
 
   componentDidMount() {
-    firebase.initializeApp({
-      apiKey: 'AIzaSyAnu_SrM4F1IEiyRCPFAM57ZdY8Hr2EQDA',
-      authDomain: 'coa-converse.firebaseapp.com',
-      databaseURL: 'https://coa-converse.firebaseio.com',
-      projectId: 'coa-converse',
-      storageBucket: 'coa-converse.appspot.com',
-      messagingSenderId: '305035449131',
-    });
-
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         user.getIdToken()
@@ -75,7 +55,44 @@ class Main extends React.Component {
       }
     });
 
-    initializeFirebaseAuthUI();
+    if (document.getElementById('firebaseui-auth-container').children.length === 0) {
+      // The start method will wait until the DOM is loaded.
+      this.state.authUi.start('#firebaseui-auth-container', {
+        signInOptions: authProviders,
+        signInFlow: 'popup',
+        callbacks: {
+          signInSuccessWithAuthResult: () => {
+            this.props.updateAuthModal({
+              variables: {
+                open: false,
+              },
+            });
+            return false;
+          },
+        },
+        // TODO:  Terms of service url.
+      });
+    }
+  }
+
+  componentDidUpdate() {
+    if (document.getElementById('firebaseui-auth-container').children.length === 0) {
+      this.state.authUi.start('#firebaseui-auth-container', {
+        signInOptions: authProviders,
+        signInFlow: 'popup',
+        callbacks: {
+          signInSuccessWithAuthResult: () => {
+            this.props.updateAuthModal({
+              variables: {
+                open: false,
+              },
+            });
+            return false;
+          },
+        },
+        // TODO:  Terms of service url.
+      });
+    }
   }
 
   render() {
@@ -94,13 +111,13 @@ class Main extends React.Component {
   }
 }
 
-
 Main.propTypes = {
   children: PropTypes.node,
 };
 
 const App = compose(
-  graphql(updateUser, { name: 'updateUser' }),
+  graphql(UPDATE_USER, { name: 'updateUser' }),
+  graphql(UPDATE_AUTHMODAL, { name: 'updateAuthModal' }),
   graphql(getUser, {
     props: ({ data: { user } }) => ({
       user,

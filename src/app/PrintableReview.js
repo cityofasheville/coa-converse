@@ -81,7 +81,7 @@ const PrintableReview = (props) => {
             }
           </fieldset>
         </div>
-        {props.review.empoyee_id === props.userId &&
+        {props.review.employee_id === props.userId &&
           <Link style={{ fontSize: '20px' }} to={{ pathname: '/', query: { mode: 'check-ins' } }}>Back to my check-ins</Link>
         }
         {props.userId === props.review.supervisor_id &&

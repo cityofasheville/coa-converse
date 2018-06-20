@@ -22,7 +22,7 @@ const authLink = setContext(
     new Promise((success, fail) => {
       const signedInUser = firebase.auth().currentUser;
       if (signedInUser) {
-        signedInUser.getIdToken(true)
+        signedInUser.getIdToken()
         .then((idToken) => {
           localStorage.setItem('token', idToken);
           success({ headers: {

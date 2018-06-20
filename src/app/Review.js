@@ -137,7 +137,7 @@ class Review extends React.Component {
 
   handleOpenModal(submitFunction) {
     if (this.state.changesSinceLastSave > 0) {
-      this.handleSubmit(submitFunction, true);
+      this.handleSubmit(submitFunction, true, 'none');
     }
     const path = ['check-in?emp=', this.props.review.employee_id, '&check-in=', this.props.review.id, '&printable=yes'].join('');
     browserHistory.push(path);
@@ -159,7 +159,7 @@ class Review extends React.Component {
       this.setState({ stayOnPageAfterSave: true });
     }
     if (saveId !== undefined) {
-      this.setState({ activeSaveId: 'saveSuccess1' });
+      this.setState({ activeSaveId: saveId });
     } else {
       this.setState({ activeSaveId: 'saveSuccess2' });
     }
@@ -218,8 +218,8 @@ class Review extends React.Component {
         }
       }
       this.setState({ responses: newResponses }, () => {
-        if (this.state.changesSinceLastSave > 10) {
-          this.handleSubmit(submitFunction, true);
+        if (this.state.changesSinceLastSave > 50) {
+          this.handleSubmit(submitFunction, true, 'none');
         }
       });
     } else {
@@ -232,8 +232,8 @@ class Review extends React.Component {
         }
       }
       this.setState({ questions: newQuestions }, () => {
-        if (this.state.changesSinceLastSave > 10) {
-          this.handleSubmit(submitFunction, true);
+        if (this.state.changesSinceLastSave > 50) {
+          this.handleSubmit(submitFunction, true, 'none');
         }
       });
     }
@@ -248,7 +248,7 @@ class Review extends React.Component {
         newQuestions.push(Object.assign({}, this.state.questions[i]));
       }
     }
-    this.setState({ questions: newQuestions }, () => this.handleSubmit(submitFunction, true));
+    this.setState({ questions: newQuestions }, () => this.handleSubmit(submitFunction, true, 'none'));
   }
 
   hasErrors() {
@@ -279,7 +279,7 @@ class Review extends React.Component {
             browserHistory.push(['/?emp=', data.updateReview.employee_id, '&mode=check-ins'].join(''));
           }
           this.setState({ changesSinceLastSave: 0 });
-          if (document.getElementById(this.state.activeSaveId)) {
+          if (this.state.activeSaveId !== 'none' && document.getElementById(this.state.activeSaveId)) {
             showSaveSuccess(this.state.activeSaveId);
           }
           if (document.getElementById('formValidationError')) {
@@ -296,9 +296,9 @@ class Review extends React.Component {
             if (autoSaveInterval === null) {
               autoSaveInterval = setInterval(() => {
                 if (this.state.changesSinceLastSave > 0) {
-                  this.handleSubmit(submit, true);
+                  this.handleSubmit(submit, true, 'none');
                 }
-              }, 30000);
+              }, 10000);
             }
           }
           return (

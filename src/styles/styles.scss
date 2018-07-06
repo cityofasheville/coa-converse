@@ -1,2 +1,48 @@
 @import "bootstrap/bootstrap";
 @import "components/components";
+
+.rte-button {
+  cursor: pointer;
+}
+
+.rte-icon {
+  font-size: 24px;
+  vertical-align: text-bottom
+}
+
+.rte-menu {
+  & > * {
+    display: inline-block;
+  }
+
+  & > * + * {
+    margin-left: 15px;
+  }
+}
+
+.rte-toolbar {
+  position: relative;
+  padding: 1px 18px 5px;
+  margin: 0 -20px;
+  border-bottom: 2px solid #eee;
+  margin-bottom: 10px;
+}
+
+.rte {
+  body {
+    background: #fff
+  }
+}
+
+.rte-disabled {
+  body {
+    background-color: rgb(248, 248, 248) !important;
+  }
+  * {
+    cursor: not-allowed
+  }
+}
+
+.rte-invalid {
+  background-color: #ffe2e2 !important;
+}

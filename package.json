@@ -48,6 +48,7 @@
     "webpack-dev-server": "^2.4.5"
   },
   "dependencies": {
+    "accessible-react-table": "^0.2.0",
     "apollo-cache-inmemory": "^1.2.3",
     "apollo-client": "^2.3.3",
     "apollo-link-context": "^1.0.5",

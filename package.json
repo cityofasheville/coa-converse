@@ -6,7 +6,7 @@
   "scripts": {
     "start": "webpack-dev-server --port 3000 --content-base dist/ --history-api-fallback",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack --optimize-minimize --config webpack.config.js",
+    "build": "webpack --optimize-minimize --config webpack.config.js && cp -r skins dist/skins && cp -r plugins dist/plugins",
     "deployCheckin": "aws s3 sync dist s3://check-in.ashevillenc.gov --delete --exclude \"*.map\" --exclude \"favicon.ico\"",
     "devDeploy": "aws s3 sync dist s3://dev-check-in.ashevillenc.gov --delete --exclude \"*.map\" --exclude \"favicon.ico\""
   },

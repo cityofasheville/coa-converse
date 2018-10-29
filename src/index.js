@@ -15,10 +15,12 @@ import 'tinymce/plugins/link';
 // Import Routes
 import Routes from './routes';
 
+
+
 // Initialize the app
 tinymce.init({
   selector: '#tiny',
-  plugins: ['paste', 'link', 'image', 'code', 'lists']
+  plugins: ['paste', 'link', 'image', 'code', 'lists'],
 });
 
 // Import styles

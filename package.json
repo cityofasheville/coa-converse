@@ -1,6 +1,6 @@
 {
   "name": "coa-converse",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "City of Asheville Converse App",
   "main": "index.js",
   "scripts": {

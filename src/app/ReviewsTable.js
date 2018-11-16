@@ -31,7 +31,7 @@ const getTimeSinceLastConversation = (reviewDate, reviewable) => {
 
 const dataColumnsCurrent = [
   {
-    Header: (<div>Check-in Date</div>),
+    Header: (<div>Last Save</div>),
     id: 'periodEnd',
     accessor: review => (<span title="View check-in">{moment.utc(review.periodEnd).format('M/DD/YYYY')}</span>),
     minWidth: 160,
@@ -59,7 +59,7 @@ const dataColumnsCurrent = [
     minWidth: 300,
   },
   {
-    Header: 'Last Change',
+    Header: 'Last Status Change',
     id: 'status_date',
     accessor: review => (<span>{moment.utc(review.status_date).format('M/DD/YYYY')}</span>),
     maxWidth: 200,

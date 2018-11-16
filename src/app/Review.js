@@ -358,13 +358,13 @@ class Review extends React.Component {
                         <div className={dateErrors.endDate ? 'col-sm-12 invalid' : 'col-sm-12'}>
                           <label htmlFor="endDate" className="col-sm-4" style={{ textAlign: 'right' }}>Date of this check-in: </label>
                           <div className="col-sm-8">
-                            {this.state.answersEditable &&
+                            {/* {this.state.answersEditable &&
                               <DatePickerWrapper selected={moment.utc(this.state.periodEnd)} id="endDate" onChange={value => this.handleEndDateChange(value, submit)} />
                             }
                             {this.state.answersEditable && dateErrors.endDate &&
                               <span style={{ color: 'red', fontWeight: 'bold', marginLeft: '10px' }}>&apos;Date of this check-in&apos; is required</span>
-                            }
-                            {!this.state.answersEditable &&
+                            } */}
+                            {// !this.state.answersEditable &&
                               <span>{moment.utc(this.state.periodEnd).format('M/DD/YYYY')}</span>
                             }
                           </div>

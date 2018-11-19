@@ -10,7 +10,7 @@ import { withClientState } from 'apollo-link-state';
 import { resolvers } from './resolvers';
 import { defaultState } from './defaultState';
 
-let SERVER_URL = 'https://coa-converse-api.ashevillenc.gov/graphql';
+let SERVER_URL = process.env.SERVER_URL;
 if (process.env.USE_LOCAL_API === 'true') {
   SERVER_URL = 'http://localhost:8080/graphql';
 }

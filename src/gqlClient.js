@@ -10,12 +10,13 @@ import { withClientState } from 'apollo-link-state';
 import { resolvers } from './resolvers';
 import { defaultState } from './defaultState';
 
-let SERVER_URL = process.env.SERVER_URL;
+let serverURL = process.env.SERVER_URL;
+console.log('server url', serverURL);
 if (process.env.USE_LOCAL_API === 'true') {
-  SERVER_URL = 'http://localhost:8080/graphql';
+  serverURL = 'http://localhost:8080/graphql';
 }
 
-const httpLink = createHttpLink({ uri: SERVER_URL, fetch });
+const httpLink = createHttpLink({ uri: serverURL, fetch });
 
 const authLink = setContext(
   request =>

@@ -10,13 +10,15 @@ import { withClientState } from 'apollo-link-state';
 import { resolvers } from './resolvers';
 import { defaultState } from './defaultState';
 
-let serverURL = process.env.SERVER_URL;
-console.log('server url', serverURL);
+let SERVER_URL = 'https://coa-converse-api.ashevillenc.gov/graphql';
+if (window.location.origin.indexOf('dev-check-in') > -1 || process.env.USE_DEV_API === 'true') {
+  SERVER_URL = 'https://dev-coa-converse-api.ashevillenc.gov/graphql';
+}
 if (process.env.USE_LOCAL_API === 'true') {
-  serverURL = 'http://localhost:8080/graphql';
+  SERVER_URL = 'http://localhost:8080/graphql';
 }
 
-const httpLink = createHttpLink({ uri: serverURL, fetch });
+const httpLink = createHttpLink({ uri: SERVER_URL, fetch });
 
 const authLink = setContext(
   request =>

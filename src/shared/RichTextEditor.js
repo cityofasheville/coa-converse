@@ -22,8 +22,8 @@ class RichTextEditor extends React.Component {
   render() {
     return <TinyMCE
       id={this.props.id}
-      key={this.props.content}
-      content={this.props.content}
+      key={this.props.content || ''}
+      content={this.props.content || ''}
       config={{
         plugins: 'link image code lists',
         toolbar: 'undo redo  | bold italic underline strikethrough| alignleft aligncenter alignright | numlist bullist | indent outdent | code',

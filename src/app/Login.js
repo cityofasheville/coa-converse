@@ -89,7 +89,6 @@ class Login extends React.Component {
         {
           (registerCode, { data, error }) => {
             const { isLoggedIn, message } = this.state;
-            console.log(this.state)
             return (
               <div>
                 <RegisterCode

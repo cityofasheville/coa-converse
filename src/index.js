@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import 'babel-polyfill';
+// import 'babel-polyfill';
 
 // Import TinyMCE
 import tinymce from 'tinymce/tinymce';
@@ -11,6 +11,7 @@ import 'tinymce/themes/modern/theme';
 // Any plugins you want to use has to be imported
 import 'tinymce/plugins/paste';
 import 'tinymce/plugins/link';
+
 
 // Initialize the app
 tinymce.init({

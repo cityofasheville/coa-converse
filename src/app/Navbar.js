@@ -2,6 +2,7 @@ import React from 'react';
 import { Query } from 'react-apollo';
 import gql from 'graphql-tag';
 import LoadingAnimation from '../shared/LoadingAnimation';
+import Error from '../shared/Error';
 import Icon from '../shared/Icon';
 import { IM_PENCIL7 } from '../shared/iconConstants';
 import AuthControl from './AuthControl';
@@ -28,7 +29,6 @@ export const Navbar = () => (
   >
     {({ loading, error, data }) => {
       if (loading) return <LoadingAnimation />;
-      if (error) return <Error message={error.message} />;
 
       return (
         <div>
@@ -65,8 +65,8 @@ export const Navbar = () => (
                 </div>
               </div>
               <div className="pull-right" style={{ paddingTop: '15px' }}>
-                <AuthControl />
-                {data.user.loggedIn &&
+                {!error && <AuthControl />}
+                {data && data.user.loggedIn &&
                   <div style={{ clear: 'both' }}>
                     <a href="https://goo.gl/forms/iM81K4CIW3ZC1LM22" target="_blank" style={{ float: 'right', color: '#bf1bbf', fontStyle: 'italic', fontSize: '16px' }}><Icon path={IM_PENCIL7} size={18} />Give feedback</a>
                   </div>

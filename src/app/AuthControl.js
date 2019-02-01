@@ -37,7 +37,7 @@ const AuthControl = (props) => {
     >
       {({ loading, error, data }) => {
         if (loading) return null;
-        if (error) return <Error message={error.message} />;
+        if (error) return <div class="alert alert-danger">Error</div>;
         if (loggedIn) {
           return (
             <a href={process.env.REACT_APP_COGNITO_LOGOUT}>Log out</a>

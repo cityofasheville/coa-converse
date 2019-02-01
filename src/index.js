@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter } from 'react-router-dom';
 import 'babel-polyfill';
 
 // Import TinyMCE
@@ -25,8 +24,8 @@ require('./styles/styles.scss');
 
 import App from './app/App';
 
+
+// https://github.com/ReactTraining/react-router/tree/v3/docs
 ReactDOM.render(
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>
+  <App />
 , document.getElementById('app'));

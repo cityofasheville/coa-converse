@@ -2,7 +2,6 @@ import React from 'react';
 import gql from 'graphql-tag';
 import queryString from 'query-string';
 import { Mutation, graphql } from 'react-apollo';
-import { withRouter } from 'react-router-dom';
 import RegisterCode from './RegisterCode';
 import Error from '../shared/Error';
 import LoadingAnimation from '../shared/LoadingAnimation';
@@ -50,6 +49,7 @@ class Login extends React.Component {
       },
       history,
     } = this.props;
+    console.log(search)
     const { code } = queryString.parse(search);
     return (
       <Mutation
@@ -59,6 +59,7 @@ class Login extends React.Component {
         }])}
         awaitRefetchQueries
         onCompleted={(data) => {
+          console.log(data)
           this.setState({
             isLoggedIn: data.registerCode.loggedIn,
             message: data.registerCode.message,
@@ -90,6 +91,7 @@ class Login extends React.Component {
                 <RegisterCode
                   registerCode={registerCode}
                   code={code}
+                  redirect_uri={process.env.REDIRECT_URI}
                   loggedIn={isLoggedIn}
                 >
                   <div>
@@ -112,4 +114,4 @@ class Login extends React.Component {
   }
 }
 
-export default withRouter(graphql(GET_USER_INFO, { name: 'userInfo' })(Login));
+export default graphql(GET_USER_INFO, { name: 'userInfo' })(Login);

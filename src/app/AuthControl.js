@@ -1,6 +1,5 @@
 import React from 'react';
 import gql from 'graphql-tag';
-import { withRouter } from 'react-router-dom';
 import { Query } from 'react-apollo';
 import Error from '../shared/Error';
 
@@ -56,4 +55,4 @@ const AuthControl = (props) => {
   );
 };
 
-export default withRouter(AuthControl);
+export default AuthControl;

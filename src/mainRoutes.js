@@ -1,5 +1,6 @@
 import React from 'react';
-import { Switch, Route } from 'react-router-dom';
+import { Router, Route, browserHistory } from 'react-router';
+
 
 // Google Analytics
 //import ReactGA from 'react-ga';
@@ -28,14 +29,13 @@ import ReviewContainer from './app/ReviewContainer';
 
 const mainRoutes = (
   //TODO: analytics...
-  <Switch>
+  <Router history={browserHistory}>
     <Route exact path="/" component={Home} />
     <Route path="/login" component={Login} />
     <Route path="/logout" component={Logout} />
     <Route path="/check-ins" component={Reviews} />
     <Route path="/check-in" component={ReviewContainer} />
-  </Switch>
+  </Router>
 );
 
 export default mainRoutes;
-

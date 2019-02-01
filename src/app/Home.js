@@ -21,7 +21,7 @@ const GET_USER_INFO = gql`
   }
 `;
 
-const Homepage = props => (
+const Home = props => (
   <Query query={GET_USER_INFO}>
     {({ loading, error, data }) => {
       if (loading) return <LoadingAnimation />;
@@ -42,4 +42,4 @@ const Homepage = props => (
   </Query>
 );
 
-export default Homepage;
+export default Home;

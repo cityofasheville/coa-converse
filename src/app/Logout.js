@@ -1,7 +1,6 @@
 import React from 'react';
 import gql from 'graphql-tag';
 import { Mutation } from 'react-apollo';
-import { withRouter } from 'react-router-dom';
 import LogoutCode from './LogoutCode';
 import Error from '../shared/Error';
 import LoadingAnimation from '../shared/LoadingAnimation';
@@ -92,4 +91,4 @@ class Logout extends React.Component {
   }
 }
 
-export default withRouter(Logout);
+export default Logout;

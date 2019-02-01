@@ -5,6 +5,7 @@ import { Mutation, graphql } from 'react-apollo';
 import RegisterCode from './RegisterCode';
 import Error from '../shared/Error';
 import LoadingAnimation from '../shared/LoadingAnimation';
+import { browserHistory } from 'react-router';
 
 const GET_USER_INFO = gql`
   query user {
@@ -73,9 +74,9 @@ class Login extends React.Component {
                 if (priorPath !== '/login') {
                   const priorSearch = localStorage.getItem('preLoginSearch');
                   if (priorSearch) {
-                    history.push(`${priorPath}${priorSearch}`);
+                    browserHistory.push(`${priorPath}${priorSearch}`);
                   } else {
-                    history.push(priorPath);
+                    browserHistory.push(priorPath);
                   }
                 }
               }
@@ -86,6 +87,7 @@ class Login extends React.Component {
         {
           (registerCode, { data, error }) => {
             const { isLoggedIn, message } = this.state;
+            console.log(this.state)
             return (
               <div>
                 <RegisterCode

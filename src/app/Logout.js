@@ -4,6 +4,7 @@ import { Mutation } from 'react-apollo';
 import LogoutCode from './LogoutCode';
 import Error from '../shared/Error';
 import LoadingAnimation from '../shared/LoadingAnimation';
+import { browserHistory } from 'react-router';
 
 const GET_USER_INFO = gql`
   query user {
@@ -55,10 +56,9 @@ class Logout extends React.Component {
             fail: data.logout.loggedIn,
           }, () => {
             const { isLoggedIn } = this.state;
-            const { history } = this.props;
             if (!isLoggedIn) {
               localStorage.setItem('loggedIn', false);
-              history.push('/');
+              browserHistory.push('/');
             }
           });
         }}

@@ -50,7 +50,6 @@ class Login extends React.Component {
       },
       history,
     } = this.props;
-    console.log(search)
     const { code } = queryString.parse(search);
     return (
       <Mutation
@@ -70,6 +69,7 @@ class Login extends React.Component {
             if (isLoggedIn) {
               localStorage.setItem('loggedIn', true);
               const priorPath = localStorage.getItem('preLoginPathname');
+
               if (priorPath) {
                 if (priorPath !== '/login') {
                   const priorSearch = localStorage.getItem('preLoginSearch');
@@ -79,6 +79,8 @@ class Login extends React.Component {
                     browserHistory.push(priorPath);
                   }
                 }
+              } else {
+                browserHistory.push('/')
               }
             }
           });

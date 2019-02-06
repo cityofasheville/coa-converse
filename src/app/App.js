@@ -7,7 +7,7 @@ import mainRoutes from '../mainRoutes';
 const App = () => (
   <ApolloProvider client={client}>
     <main>
-      <div className="">
+      <div>
         <Navbar />
         <div className="container" id="content">
           {mainRoutes}

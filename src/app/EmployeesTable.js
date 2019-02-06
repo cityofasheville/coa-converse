@@ -74,7 +74,6 @@ const dataColumns = [
 
 const EmployeesTable = (props) => {
   const employees = props.data.employee === null ? [] : props.data.employee.employees;
-  console.log(employees, dataColumns)
   return (
     <div className="row">
       <div className="col-sm-12">

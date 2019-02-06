@@ -94,6 +94,7 @@ const submitReview = gql`
 `;
 
 let autoSaveInterval = null;
+let isMounted = false;
 
 class Review extends React.Component {
   constructor(props) {
@@ -131,7 +132,12 @@ class Review extends React.Component {
     return false;
   }
 
+  componentDidMount() {
+    isMounted = true;
+  }
+
   componentWillUnmount() {
+    isMounted = false;
     clearInterval(autoSaveInterval);
   }
 
@@ -276,7 +282,13 @@ class Review extends React.Component {
         }}
         onCompleted={(data) => {
           if (!this.state.stayOnPageAfterSave) {
+            console.log('Before history pushed!')
             browserHistory.push(['/?emp=', data.updateReview.employee_id, '&mode=check-ins'].join(''));
+            console.log('History pushed!')
+            return;
+          }
+          if (!isMounted) {
+            return;
           }
           this.setState({ changesSinceLastSave: 0 });
           if (this.state.activeSaveId !== 'none' && document.getElementById(this.state.activeSaveId)) {
@@ -430,7 +442,7 @@ class Review extends React.Component {
                               >
                                 <label>
                                   <Radio value="Open" />Re-open
-                                </label>                          
+                                </label>
                                 <label>
                                   <Radio value="Closed" />Submit to HR record
                                 </label>
@@ -462,7 +474,7 @@ class Review extends React.Component {
                                 </label>
                                 <label>
                                   <Radio value="Open" />Further discussion requested
-                                </label>                          
+                                </label>
                               </RadioGroup>
                               <div className="alert alert-success alert-sm" data-type="saveSuccess" id="saveSuccess2" hidden>
                                 <p>

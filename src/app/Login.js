@@ -59,7 +59,6 @@ class Login extends React.Component {
         }])}
         awaitRefetchQueries
         onCompleted={(data) => {
-          console.log(data)
           this.setState({
             isLoggedIn: data.registerCode.loggedIn,
             message: data.registerCode.message,

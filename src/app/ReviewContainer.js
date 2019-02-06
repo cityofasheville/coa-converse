@@ -63,7 +63,7 @@ const ReviewContainer = (props) => {
       skip={fetched}
     >
       {({ loading, error, data }) => {
-        if (loading) return <LoadingAnimation />;
+        if (loading || data === undefined) return <LoadingAnimation />;
         if (error) return <Error message={error.message} />;
         const loggedInEmployee = data.employee;
         const review = data.review;
@@ -77,13 +77,19 @@ const ReviewContainer = (props) => {
             skip={fetched}
           >
             {({ loading, error, data }) => {
-              if (loading) return <LoadingAnimation />;
+              if (loading || data === undefined) return <LoadingAnimation />;
               if (error) return <Error message={error.message} />;
               fetched = true;
               const lastReviewed = data.employee.last_reviewed;
               if (printable !== 'yes') {
                 return (
-                  <Review review={review} userId={loggedInEmployee.id} printable={printable === 'yes'} lastReviewed={lastReviewed} location={props.location} />
+                  <Review
+                    review={review}
+                    userId={loggedInEmployee.id}
+                    printable={printable === 'yes'}
+                    lastReviewed={lastReviewed}
+                    location={props.location}
+                  />
                 );
               }
               return <PrintableReview review={review} userId={loggedInEmployee.id} lastReviewed={lastReviewed} />;
@@ -95,4 +101,3 @@ const ReviewContainer = (props) => {
 };
 
 export default ReviewContainer;
-

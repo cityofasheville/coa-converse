@@ -282,9 +282,7 @@ class Review extends React.Component {
         }}
         onCompleted={(data) => {
           if (!this.state.stayOnPageAfterSave) {
-            console.log('Before history pushed!')
             browserHistory.push(['/?emp=', data.updateReview.employee_id, '&mode=check-ins'].join(''));
-            console.log('History pushed!')
             return;
           }
           if (!isMounted) {

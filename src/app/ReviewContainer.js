@@ -54,17 +54,18 @@ const ReviewContainer = (props) => {
   const id = search['check-in'] || -1;
   return (
     <Query
-      query={GET_REVIEW}
-      variables={{
-        id,
-        employee_id: emp,
-      }}
-      fetchPolicy="network-only"
-      skip={fetched}
+    query={GET_REVIEW}
+    variables={{
+      id,
+      employee_id: emp,
+    }}
+    fetchPolicy="network-only"
+    skip={fetched}
     >
       {({ loading, error, data }) => {
         if (loading || data === undefined) return <LoadingAnimation />;
         if (error) return <Error message={error.message} />;
+        console.log('hello', fetched);
         const loggedInEmployee = data.employee;
         const review = data.review;
 
@@ -77,8 +78,10 @@ const ReviewContainer = (props) => {
             skip={fetched}
           >
             {({ loading, error, data }) => {
+              console.log(loading, data); // the data
               if (loading || data === undefined) return <LoadingAnimation />;
               if (error) return <Error message={error.message} />;
+              console.log('there');
               fetched = true;
               const lastReviewed = data.employee.last_reviewed;
               if (printable !== 'yes') {

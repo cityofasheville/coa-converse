@@ -75,13 +75,11 @@ const ReviewContainer = (props) => {
             variables={{
               id: emp,
             }}
-            skip={fetched}
+            //skip={fetched}
           >
             {({ loading, error, data }) => {
-              console.log(loading, data); // the data
               if (loading || data === undefined) return <LoadingAnimation />;
               if (error) return <Error message={error.message} />;
-              console.log('there');
               fetched = true;
               const lastReviewed = data.employee.last_reviewed;
               if (printable !== 'yes') {

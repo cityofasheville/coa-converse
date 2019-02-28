@@ -1,11 +1,11 @@
 import React from 'react';
-import { RadioGroup, Radio } from 'react-radio-group';
+//import { RadioGroup, Radio } from 'react-radio-group';
 import PropTypes from 'prop-types';
 import RichTextEditor from '../shared/RichTextEditor';
 
-const markup = (stringValue) => {
-  return { __html: stringValue };
-}
+// const markup = (stringValue) => {
+//   return { __html: stringValue };
+// }
 
 class Response extends React.Component {
   constructor(props) {

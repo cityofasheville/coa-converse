@@ -1,23 +1,6 @@
 import React from 'react';
-import gql from 'graphql-tag';
-import { Query } from 'react-apollo';
-import Error from '../shared/Error';
-
-const GET_USER_INFO = gql`
-  query user {
-    user {
-      id,
-      name,
-      email,
-      position,
-      department,
-      division,
-      supervisor_id,
-      supervisor,
-      supervisor_email,
-    }
-  }
-`;
+import { ApolloConsumer } from 'react-apollo';
+import { GET_USER_INFO } from '../app/Queries';
 
 const saveLocationThenLogin = (location) => {
   localStorage.setItem('preLoginPathname', location.pathname);
@@ -25,19 +8,12 @@ const saveLocationThenLogin = (location) => {
   window.location = process.env.REACT_APP_COGNITO_LOGIN;
 };
 
-const AuthControl = (props) => {
-  const loggedIn = localStorage.getItem('loggedIn') === 'true';
-  const { location } = props;
-
-  return (
-    <Query
-      query={GET_USER_INFO}
-      fetchPolicy="network-only"
-    >
-      {({ loading, error, data }) => {
-        if (loading) return null;
-        if (error) return <div class="alert alert-danger">Error</div>;
-        if (loggedIn) {
+const AuthControl = () => (
+  <ApolloConsumer>
+    {
+      (client) => {
+        const user = client.readQuery({ query: GET_USER_INFO });
+        if (user.user.id !== null) {
           return (
             <a href={process.env.REACT_APP_COGNITO_LOGOUT}>Log out</a>
           );
@@ -50,9 +26,9 @@ const AuthControl = (props) => {
             Log in
           </a>
         );
-      }}
-    </Query>
-  );
-};
+      }
+    }
+  </ApolloConsumer>
+);
 
 export default AuthControl;

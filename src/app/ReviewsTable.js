@@ -96,6 +96,7 @@ const GET_LOGGED_IN_EMPLOYEE = gql`
 const ReviewsTable = props => (
   <Query
     query={GET_LOGGED_IN_EMPLOYEE}
+    fetchPolicy="network-only"
   >
     {({ loading, error, data }) => {
       if (loading) return <LoadingAnimation />;

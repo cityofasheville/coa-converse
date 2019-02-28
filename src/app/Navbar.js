@@ -1,10 +1,6 @@
 import React from 'react';
-import { Query } from 'react-apollo';
+import { ApolloConsumer } from 'react-apollo';
 import gql from 'graphql-tag';
-import LoadingAnimation from '../shared/LoadingAnimation';
-import Error from '../shared/Error';
-import Icon from '../shared/Icon';
-import { IM_PENCIL7 } from '../shared/iconConstants';
 import AuthControl from './AuthControl';
 
 const GET_USER_INFO = gql`
@@ -24,14 +20,11 @@ const GET_USER_INFO = gql`
 `;
 
 export const Navbar = () => (
-  <Query
-    query={GET_USER_INFO}
-  >
-    {({ loading, error, data }) => {
-      if (loading) return <LoadingAnimation />;
-
-      return (
-        <div>
+  <ApolloConsumer>
+    {
+      (client) => {
+        const user = client.readQuery({ query: GET_USER_INFO });
+        return (<div>
           <nav
             className="navbar navbar-default"
             style={{ backgroundColor: '#f6fcff'}}
@@ -65,19 +58,14 @@ export const Navbar = () => (
                 </div>
               </div>
               <div className="pull-right" style={{ paddingTop: '15px' }}>
-                {!error && <AuthControl />}
-                {data && data.user.loggedIn &&
-                  <div style={{ clear: 'both' }}>
-                    <a href="https://goo.gl/forms/iM81K4CIW3ZC1LM22" target="_blank" style={{ float: 'right', color: '#bf1bbf', fontStyle: 'italic', fontSize: '16px' }}><Icon path={IM_PENCIL7} size={18} />Give feedback</a>
-                  </div>
-                }
+                {user && <AuthControl />}
               </div>
             </div>
           </nav>
-        </div>
-      );
-    }}
-  </Query>
+        </div>);
+      }
+    }
+  </ApolloConsumer>
 );
 
 export default Navbar;

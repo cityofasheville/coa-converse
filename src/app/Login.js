@@ -1,7 +1,7 @@
 import React from 'react';
 import gql from 'graphql-tag';
 import queryString from 'query-string';
-import { Mutation, graphql } from 'react-apollo';
+import { Mutation } from 'react-apollo';
 import RegisterCode from './RegisterCode';
 import Error from '../shared/Error';
 import LoadingAnimation from '../shared/LoadingAnimation';
@@ -79,7 +79,7 @@ class Login extends React.Component {
                   }
                 }
               } else {
-                browserHistory.push('/')
+                browserHistory.push('/');
               }
             }
           });
@@ -116,4 +116,4 @@ class Login extends React.Component {
   }
 }
 
-export default graphql(GET_USER_INFO, { name: 'userInfo' })(Login);
+export default Login;

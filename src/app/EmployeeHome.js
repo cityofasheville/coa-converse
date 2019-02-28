@@ -27,6 +27,7 @@ const EmployeeHome = props => (
     variables={{
       id: queryString.parse(location.search).emp,
     }}
+    fetchPolicy="network-only"
   >
     {({ loading, error, data }) => {
       if (loading) return <LoadingAnimation />;
@@ -34,7 +35,7 @@ const EmployeeHome = props => (
       const queryParams = queryString.parse(location.search);
 
       const isSupervisor = () => (
-        data.employee.employees.length > 0
+        data.employee !== undefined && data.employee.employees.length > 0
       );
 
       const refreshLocation = (value) => {

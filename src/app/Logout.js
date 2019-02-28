@@ -1,6 +1,6 @@
 import React from 'react';
 import gql from 'graphql-tag';
-import { Mutation } from 'react-apollo';
+import { Mutation, ApolloConsumer } from 'react-apollo';
 import LogoutCode from './LogoutCode';
 import Error from '../shared/Error';
 import LoadingAnimation from '../shared/LoadingAnimation';
@@ -44,49 +44,52 @@ class Logout extends React.Component {
 
   render() {
     return (
-      <Mutation
-        mutation={LOGOUT_CODE}
-        refetchQueries={() => ([{
-          query: GET_USER_INFO,
-        }])}
-        onCompleted={(data) => {
-          this.setState({
-            isLoggedIn: data.logout.loggedIn,
-            message: data.logout.message,
-            fail: data.logout.loggedIn,
-          }, () => {
-            const { isLoggedIn } = this.state;
-            if (!isLoggedIn) {
-              localStorage.setItem('loggedIn', false);
-              browserHistory.push('/');
+      <ApolloConsumer>
+        {client => (
+          <Mutation
+            mutation={LOGOUT_CODE}
+            onCompleted={(data) => {
+              this.setState({
+                isLoggedIn: data.logout.loggedIn,
+                message: data.logout.message,
+                fail: data.logout.loggedIn,
+              }, () => {
+                const { isLoggedIn } = this.state;
+                if (!isLoggedIn) {
+                  localStorage.setItem('loggedIn', false);
+                  client.resetStore().then(() => {
+                    browserHistory.push('/');
+                  });
+                }
+              });
+            }}
+          >
+            {
+            (logout, { data, error }) => {
+              const { isLoggedIn, message, fail } = this.state;
+              return (
+                <div>
+                  <LogoutCode
+                    logout={logout}
+                    loggedIn={isLoggedIn}
+                  >
+                    <div>
+                      {
+                        fail // eslint-disable-line no-nested-ternary
+                          ? <Error message={message} />
+                          : isLoggedIn
+                            ? <LoadingAnimation />
+                            : <div></div>
+                      }
+                    </div>
+                  </LogoutCode>
+                </div>
+              );
             }
-          });
-        }}
-      >
-        {
-          (logout, { data, error }) => {
-            const { isLoggedIn, message, fail } = this.state;
-            return (
-              <div>
-                <LogoutCode
-                  logout={logout}
-                  loggedIn={isLoggedIn}
-                >
-                  <div>
-                    {
-                      fail // eslint-disable-line no-nested-ternary
-                        ? <Error message={message} />
-                        : isLoggedIn
-                          ? <LoadingAnimation />
-                          : <div>You are logged out</div>
-                    }
-                  </div>
-                </LogoutCode>
-              </div>
-            );
           }
-        }
-      </Mutation>
+          </Mutation>
+      )}
+      </ApolloConsumer>
     );
   }
 }

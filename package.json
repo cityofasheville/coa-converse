@@ -8,7 +8,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --optimize-minimize --config webpack.config.js && cp -r skins dist/skins && cp -r plugins dist/plugins",
     "deployCheckin": "aws s3 sync dist s3://check-in.ashevillenc.gov --delete --exclude \"*.map\" --exclude \"favicon.ico\"",
-    "devDeploy": "aws s3 sync dist s3://dev-check-in.ashevillenc.gov --delete --exclude \"*.map\" --exclude \"favicon.ico\""
+    "devDeploy": "aws s3 sync dist s3://dev-check-in.ashevillenc.gov --delete --exclude \"*.map\" --exclude \"favicon.ico\"",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "repository": {
     "type": "git",
@@ -73,6 +75,8 @@
     "react-tinymce": "^0.7.0",
     "tinymce": "^4.8.4",
     "unfetch": "^3.0.0",
-    "url-loader": "^0.5.9"
-  }
+    "url-loader": "^0.5.9",
+    "snyk": "^1.189.0"
+  },
+  "snyk": true
 }

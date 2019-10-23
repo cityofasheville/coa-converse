@@ -10,6 +10,7 @@ const GET_REVIEW = gql`
   query reviewQuery($id: Int, $employee_id: Int) {
     employee {
       id
+      supervisor_id
     }
     review (id: $id, employee_id: $employee_id) {
       id
@@ -82,7 +83,7 @@ const ReviewContainer = (props) => {
                   <Review review={review} userId={loggedInEmployee.id} printable={props.location.query.printable === 'yes'} lastReviewed={lastReviewed} location={props.location} />
                 );
               }
-              return <PrintableReview review={review} userId={loggedInEmployee.id} lastReviewed={lastReviewed} />;
+              return <PrintableReview review={review} userId={loggedInEmployee.id} employee={data.employee} lastReviewed={lastReviewed} />;
             }}
           </Query>
         );

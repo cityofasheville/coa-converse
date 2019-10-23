@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Query } from 'react-apollo';
+import queryString from 'query-string';
 import gql from 'graphql-tag';
 import ReviewsTable from './ReviewsTable';
 import LoadingAnimation from '../shared/LoadingAnimation';
@@ -52,7 +53,7 @@ const Reviews = props => (
   <Query
     query={GET_REVIEWS}
     variables={{
-      id: props.location.query.emp,
+      id: queryString.parse(location.search).emp,
     }}
     fetchPolicy="network-only"
   >

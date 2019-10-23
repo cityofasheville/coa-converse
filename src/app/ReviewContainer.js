@@ -1,6 +1,7 @@
 import React from 'react';
 import { Query } from 'react-apollo';
 import gql from 'graphql-tag';
+import queryString from 'query-string';
 import Review from './Review';
 import PrintableReview from './PrintableReview';
 import LoadingAnimation from '../shared/LoadingAnimation';
@@ -49,12 +50,15 @@ const GET_LAST_REVIEWED = gql`
 
 const ReviewContainer = (props) => {
   let fetched = false;
+  const search = queryString.parse(location.search);
+  const { emp, printable } = search;
+  const id = search['check-in'] || -1;
   return (
     <Query
       query={GET_REVIEW}
       variables={{
-        id: props.location.query['check-in'] || -1,
-        employee_id: props.location.query.emp,
+        id,
+        employee_id: emp,
       }}
       fetchPolicy="network-only"
       skip={fetched}
@@ -69,7 +73,7 @@ const ReviewContainer = (props) => {
           <Query
             query={GET_LAST_REVIEWED}
             variables={{
-              id: props.location.query.emp,
+              id: emp,
             }}
             skip={fetched}
           >
@@ -78,9 +82,9 @@ const ReviewContainer = (props) => {
               if (error) return <Error message={error.message} />;
               fetched = true;
               const lastReviewed = data.employee.last_reviewed;
-              if (props.location.query.printable !== 'yes') {
+              if (printable !== 'yes') {
                 return (
-                  <Review review={review} userId={loggedInEmployee.id} printable={props.location.query.printable === 'yes'} lastReviewed={lastReviewed} location={props.location} />
+                  <Review review={review} userId={loggedInEmployee.id} employee={data.employee} printable={printable === 'yes'} lastReviewed={lastReviewed} location={props.location} />
                 );
               }
               return <PrintableReview review={review} userId={loggedInEmployee.id} employee={data.employee} lastReviewed={lastReviewed} />;

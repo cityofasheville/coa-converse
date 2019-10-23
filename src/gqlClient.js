@@ -1,21 +1,61 @@
 import { ApolloClient } from 'apollo-client';
-import { InMemoryCache } from 'apollo-cache-inmemory';
+import fetch from 'unfetch';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 import { createHttpLink } from 'apollo-link-http';
+import { ApolloLink } from 'apollo-link';
+import { setContext } from 'apollo-link-context';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+import { withClientState } from 'apollo-link-state';
+import { resolvers } from './resolvers';
+import { defaultState } from './defaultState';
 
 let SERVER_URL = 'https://coa-converse-api.ashevillenc.gov/graphql';
-if (window.location.origin.indexOf('dev-check-in') > -1 || process.env.USE_DEV_API === 'true') {
-  SERVER_URL = 'https://dev-coa-converse-api.ashevillenc.gov/graphql';
-}
 if (process.env.USE_LOCAL_API === 'true') {
-  SERVER_URL = 'http://localhost:4000/graphql';
+  SERVER_URL = 'http://localhost:8080/graphql';
 }
 
-const client = new ApolloClient({
-  link: createHttpLink({
-    uri: SERVER_URL,
-    credentials: 'include',
-  }),
-  cache: new InMemoryCache(),
+const httpLink = createHttpLink({ uri: SERVER_URL, fetch });
+
+const authLink = setContext(
+  request =>
+    new Promise((success, fail) => {
+      const signedInUser = firebase.auth().currentUser;
+      if (signedInUser) {
+        signedInUser.getIdToken()
+        .then((idToken) => {
+          localStorage.setItem('token', idToken);
+          success({ headers: {
+            authorization: idToken,
+          } });
+          fail(Error(request.statusText));
+        });
+      } else {
+        success({ headers: {
+          authorization: localStorage.getItem('token') || null,
+        } });
+        fail(Error(request.statusText));
+      }
+    })
+);
+
+const cache = new InMemoryCache();
+
+const stateLink = withClientState({
+  cache,
+  defaults: defaultState,
+  resolvers,
 });
 
-export default client;
+const aClient = new ApolloClient({
+  link: ApolloLink.from([
+    stateLink,
+    authLink,
+    httpLink,
+  ]),
+  cache,
+});
+
+aClient.onResetStore(stateLink.writeDefaults);
+
+export const client = aClient;

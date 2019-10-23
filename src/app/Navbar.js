@@ -1,30 +1,15 @@
 import React from 'react';
+import { IndexLink } from 'react-router';
 import { Query } from 'react-apollo';
-import gql from 'graphql-tag';
 import LoadingAnimation from '../shared/LoadingAnimation';
 import Icon from '../shared/Icon';
 import { IM_PENCIL7 } from '../shared/iconConstants';
-import AuthControl from './AuthControl';
-
-const GET_USER_INFO = gql`
-  query user {
-    user {
-      id,
-      name,
-      email,
-      position,
-      department,
-      division,
-      supervisor_id,
-      supervisor,
-      supervisor_email,
-    }
-  }
-`;
+import AuthControl from '../utilities/auth/authControl';
+import { getUser } from '../utilities/auth/graphql/authQueries';
 
 export const Navbar = () => (
   <Query
-    query={GET_USER_INFO}
+    query={getUser}
   >
     {({ loading, error, data }) => {
       if (loading) return <LoadingAnimation />;
@@ -45,23 +30,23 @@ export const Navbar = () => (
                   marginBottom: '5px',
                 }}
               >
-                <a href="/">
+                <IndexLink to="/">
                   <img
                     src={require('./citylogo-flatblue.png')}
                     width="80px"
                     height="80px"
                     alt="City of Asheville logo"
                   ></img>
-                </a>
+                </IndexLink>
               </div>
               <div className="navbar-header">
                 <div className="pull-left">
-                  <a href="/" className="navbar-brand nounderline" >
+                  <IndexLink to="/" className="navbar-brand nounderline" >
                     <span style={{ fontSize: '30px', marginBottom: '-10px' }}>Employee Check-in
                     </span>
                     <br />
                     <span style={{ fontStyle: 'italic', fontSize: '13px' }}>City of Asheville, NC</span>
-                  </a>
+                  </IndexLink>
                 </div>
               </div>
               <div className="pull-right" style={{ paddingTop: '15px' }}>

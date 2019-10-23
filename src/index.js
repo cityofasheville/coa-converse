@@ -1,6 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import { BrowserRouter } from 'react-router-dom';
+import { render } from 'react-dom';
 import 'babel-polyfill';
 
 // Import TinyMCE
@@ -13,6 +12,10 @@ import 'tinymce/themes/modern/theme';
 import 'tinymce/plugins/paste';
 import 'tinymce/plugins/link';
 
+// Import Routes
+import Routes from './routes';
+
+
 
 // Initialize the app
 tinymce.init({
@@ -23,10 +26,6 @@ tinymce.init({
 // Import styles
 require('./styles/styles.scss');
 
-import App from './app/App';
-
-ReactDOM.render(
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>
-, document.getElementById('app'));
+render((
+  <Routes />
+), document.getElementById('app'));

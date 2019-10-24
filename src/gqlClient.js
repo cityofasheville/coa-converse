@@ -11,6 +11,9 @@ import { resolvers } from './resolvers';
 import { defaultState } from './defaultState';
 
 let SERVER_URL = 'https://coa-converse-api.ashevillenc.gov/graphql';
+//if (window.location.origin.indexOf('dev-check-in') > -1 || process.env.USE_DEV_API === 'true') {
+ // SERVER_URL = 'https://dev-coa-converse-api.ashevillenc.gov/graphql';
+//}
 if (process.env.USE_LOCAL_API === 'true') {
   SERVER_URL = 'http://localhost:8080/graphql';
 }

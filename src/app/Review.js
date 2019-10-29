@@ -105,7 +105,7 @@ class Review extends React.Component {
       periodEnd: this.props.review.periodEnd,
       questions: this.props.review.questions,
       responses: this.props.review.responses,
-      role: this.props.review.employee_id === this.props.userId ? 'Employee' : (role === 'Supervisor' ? 'Supervisor' : 'Viewer'),
+      role: this.props.review.employee_id === this.props.userId ? 'Employee' : (this.props.currentSupervisor === this.props.userId  ? 'Supervisor' : 'Viewer'),
       answersEditable: this.props.review.status === 'Open' && role === 'Supervisor' ? true : false,
       responsesEditable: this.props.review.status === 'Ready' && role === 'Employee',
       actionRadio: 'saveprogress', // todo set appropriate action value based on other vars,
@@ -306,6 +306,7 @@ class Review extends React.Component {
               <form>
                 <div className="row form-horizontal">
                   <h1>Check-in between {this.props.review.employee_name} <br /> and supervisor {this.props.review.reviewer_name}</h1>
+                  <p>My role:{this.state.role} the status: {this.props.review.status} what is this: {this.props.currentSupervisor}</p>
                   <Link className="pull-right" style={{ fontSize: '20px' }} onClick={() => this.handleOpenModal(submit)}>Printable Version</Link>
                   <Modal
                     isOpen={this.state.modalIsOpen}
@@ -394,6 +395,7 @@ class Review extends React.Component {
                       <div className="form-group">
                         <fieldset className="reviewQuestionFieldset">
                           <legend>Action</legend>
+
                           {this.state.role === 'Supervisor' && this.props.review.status === 'Open' &&
                             <div>
                               <p><i>Please discuss your feedback with your employee before submission for their input.</i></p>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Query } from 'react-apollo';
+import {Query} from 'react-apollo';
 import gql from 'graphql-tag';
 import Review from './Review';
 import PrintableReview from './PrintableReview';
@@ -10,7 +10,6 @@ const GET_REVIEW = gql`
   query reviewQuery($id: Int, $employee_id: Int) {
     employee {
       id
-      supervisor_id
     }
     review (id: $id, employee_id: $employee_id) {
       id
@@ -43,9 +42,11 @@ const GET_LAST_REVIEWED = gql`
   query lastReviewed($id: Int) {
     employee (id: $id) {
       last_reviewed
+      supervisor_id
     }
   }
 `;
+
 
 const ReviewContainer = (props) => {
   let fetched = false;
@@ -59,35 +60,41 @@ const ReviewContainer = (props) => {
       fetchPolicy="network-only"
       skip={fetched}
     >
-      {({ loading, error, data }) => {
-        if (loading) return <LoadingAnimation />;
-        if (error) return <Error message={error.message} />;
+      {({loading, error, data}) => {
+        if (loading) return <LoadingAnimation/>;
+        if (error) return <Error message={error.message}/>;
         const loggedInEmployee = data.employee;
         const review = data.review;
 
-        return (
-          <Query
-            query={GET_LAST_REVIEWED}
-            variables={{
-              id: props.location.query.emp,
+              return (
+                <Query
+                  query={GET_LAST_REVIEWED}
+                  variables={{
+                    id: props.location.query.emp
+                  }}
+                  skip={fetched}
+                >
+
+                  {({loading, error, data}) => {
+                    if (loading) return <LoadingAnimation/>;
+                    if (error) return <Error message={error.message}/>;
+                    fetched = true;
+                    const lastReviewed = data.employee.last_reviewed;
+                    const supervisor = data.employee.supervisor_id;
+                    if (props.location.query.printable !== 'yes') {
+                      return (
+                        <Review review={review} userId={loggedInEmployee.id} currentSupervisor={supervisor}
+                                printable={props.location.query.printable === 'yes'} lastReviewed={lastReviewed}
+                                location={props.location}/>
+                      );
+                    }
+                    return <PrintableReview review={review} userId={loggedInEmployee.id}
+                                            currentSupervisor={supervisor}
+                                            lastReviewed={lastReviewed.last}/>;
+                  }}
+                </Query>
+              );
             }}
-            skip={fetched}
-          >
-            {({ loading, error, data }) => {
-              if (loading) return <LoadingAnimation />;
-              if (error) return <Error message={error.message} />;
-              fetched = true;
-              const lastReviewed = data.employee.last_reviewed;
-              if (props.location.query.printable !== 'yes') {
-                return (
-                  <Review review={review} userId={loggedInEmployee.id} printable={props.location.query.printable === 'yes'} lastReviewed={lastReviewed} location={props.location} />
-                );
-              }
-              return <PrintableReview review={review} userId={loggedInEmployee.id} employee={data.employee} lastReviewed={lastReviewed} />;
-            }}
-          </Query>
-        );
-      }}
     </Query>);
 };
 

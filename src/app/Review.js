@@ -306,7 +306,6 @@ class Review extends React.Component {
               <form>
                 <div className="row form-horizontal">
                   <h1>Check-in between {this.props.review.employee_name} <br /> and supervisor {this.props.review.reviewer_name}</h1>
-                  <p>My role:{this.state.role} the status: {this.props.review.status} what is this: {this.props.currentSupervisor}</p>
                   <Link className="pull-right" style={{ fontSize: '20px' }} onClick={() => this.handleOpenModal(submit)}>Printable Version</Link>
                   <Modal
                     isOpen={this.state.modalIsOpen}
@@ -314,7 +313,7 @@ class Review extends React.Component {
                   >
                     <h1 ref={subtitle => this.subtitle = subtitle}>Discard changes to this check-in?</h1>
                     <p>There are unsaved changes to this check-in. Navigating away from this page will cause these changes to be lost.</p>
-                      <button className="btn btn-primary" onClick={this.handleCloseModal}>Cancel</button>
+                      <button className="btn btn-primary" onClick={this.handleCloseModal}>Cancel</button>ß
                       <button className="btn btn-warning btn-sm" style={{ marginLeft: '10px' }} onClick={this.handleModalContinue}>Disgard changes and proceed to printable check-in</button>
                   </Modal>
                   <div className="col-sm-12">

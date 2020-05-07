@@ -75,6 +75,6 @@
     "react-tinymce": "^0.7.0",
     "tinymce": "^4.8.4",
     "unfetch": "^3.0.0",
-    "url-loader": "^0.5.9"
+    "url-loader": "^0.6.2"
   }
 }

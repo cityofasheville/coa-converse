@@ -73,7 +73,7 @@
     "react-router": "^3.0.0",
     "react-table": "^6.4.0",
     "react-tinymce": "^0.7.0",
-    "tinymce": "^4.8.4",
+    "tinymce": "^4.9.10",
     "unfetch": "^3.0.0",
     "url-loader": "^0.5.9"
   }

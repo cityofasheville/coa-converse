@@ -36,7 +36,7 @@ const Homepage = props => (
         );
       }
       if (data.user.loggedIn && !data.user.email.endsWith('ashevillenc.gov')) {
-        return (<div>Invalid user: You must log in with an ashevillenc.gov account.</div>);
+        return (<div>Invalid user</div>);
       }
       return (<EmployeeHome {...props} />);
     }}
